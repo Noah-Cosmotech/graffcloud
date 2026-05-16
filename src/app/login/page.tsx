@@ -10,28 +10,42 @@ import { showToast, ToastContainer } from '@/components/Toast'
 
 /* ─── Left-panel globe ──────────────────────────────────────────── */
 function LoginGlobe() {
+  // Orthographic projection: lat0=52°N, lon0=8°E, R=240, SVG center=(180,155)
+  // City positions match landing page and canvas globe
   return (
     <svg viewBox="0 0 360 320" fill="none" xmlns="http://www.w3.org/2000/svg"
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.18 }}>
+      {/* Globe sphere */}
       <circle cx="180" cy="160" r="130" stroke="white" strokeWidth="0.8" />
-      <circle cx="180" cy="160" r="90" stroke="white" strokeWidth="0.6" />
-      <circle cx="180" cy="160" r="50" stroke="white" strokeWidth="0.5" />
-      <ellipse cx="180" cy="160" rx="130" ry="44" stroke="white" strokeWidth="0.6" />
-      <ellipse cx="180" cy="160" rx="130" ry="80" stroke="white" strokeWidth="0.5" />
-      <path d="M180 30 Q210 160 180 290" stroke="white" strokeWidth="0.6" fill="none" />
-      <path d="M180 30 Q150 160 180 290" stroke="white" strokeWidth="0.6" fill="none" />
-      <path d="M180 30 Q240 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
-      <path d="M180 30 Q120 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
-      {/* Nodes */}
-      <circle cx="178" cy="82" r="4" fill="oklch(0.76 0.15 65)" />
-      <circle cx="178" cy="82" r="10" fill="oklch(0.76 0.15 65)" opacity="0.3" />
-      <circle cx="135" cy="155" r="3" fill="oklch(0.76 0.15 65)" />
-      <circle cx="232" cy="142" r="3" fill="oklch(0.76 0.15 65)" />
-      <circle cx="218" cy="208" r="2.5" fill="white" opacity="0.7" />
-      <circle cx="148" cy="215" r="2.5" fill="white" opacity="0.5" />
-      {/* Arcs */}
-      <path d="M178 82 Q205 120 232 142" stroke="oklch(0.76 0.15 65)" strokeWidth="1.2" fill="none" opacity="0.7" />
-      <path d="M178 82 Q155 120 135 155" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.5" />
+      <circle cx="180" cy="160" r="92" stroke="white" strokeWidth="0.5" />
+      <ellipse cx="180" cy="160" rx="130" ry="43" stroke="white" strokeWidth="0.5" />
+      <ellipse cx="180" cy="160" rx="130" ry="83" stroke="white" strokeWidth="0.4" />
+      <path d="M180 30 Q214 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
+      <path d="M180 30 Q146 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
+      {/* K4Z3 trail: Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona */}
+      <path d="M186 122 Q180 111 174 120" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.6" />
+      <path d="M174 120 Q179 102 185 107" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.55" />
+      <path d="M185 107 Q190 114 191 139" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.5" />
+      <path d="M191 139 Q190 140 185 149" stroke="oklch(0.76 0.15 65)" strokeWidth="0.9" fill="none" opacity="0.45" />
+      <path d="M185 149 Q178 149 172 153" stroke="oklch(0.76 0.15 65)" strokeWidth="0.9" fill="none" opacity="0.4" />
+      <path d="M172 153 Q164 179 162 198" stroke="oklch(0.76 0.15 65)" strokeWidth="1.1" fill="none" opacity="0.6" />
+      {/* Trondheim — above Oslo */}
+      <circle cx="185" cy="107" r="3" fill="oklch(0.76 0.15 65)" />
+      <circle cx="185" cy="107" r="7" fill="oklch(0.76 0.15 65)" opacity="0.25" />
+      {/* Oslo — primary hub */}
+      <circle cx="186" cy="122" r="4" fill="oklch(0.76 0.15 65)" />
+      <circle cx="186" cy="122" r="9" fill="oklch(0.76 0.15 65)" opacity="0.3" />
+      {/* Bergen — left of Oslo */}
+      <circle cx="174" cy="120" r="2.5" fill="oklch(0.76 0.15 65)" opacity="0.8" />
+      {/* Göteborg */}
+      <circle cx="191" cy="139" r="2.5" fill="oklch(0.76 0.15 65)" opacity="0.7" />
+      {/* Copenhagen */}
+      <circle cx="185" cy="149" r="2" fill="white" opacity="0.6" />
+      {/* Hamburg */}
+      <circle cx="172" cy="153" r="2" fill="white" opacity="0.5" />
+      {/* Barcelona — southern terminus */}
+      <circle cx="162" cy="198" r="3.5" fill="oklch(0.76 0.15 65)" opacity="0.85" />
+      <circle cx="162" cy="198" r="8" fill="oklch(0.76 0.15 65)" opacity="0.2" />
     </svg>
   )
 }

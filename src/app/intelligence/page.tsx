@@ -306,8 +306,12 @@ export default function IntelligencePage() {
     const resize = () => {
       const parent = canvas.parentElement
       if (!parent) return
-      canvas.width = parent.clientWidth
-      canvas.height = parent.clientHeight
+      const dpr = window.devicePixelRatio || 1
+      const w = parent.clientWidth
+      const h = parent.clientHeight
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
     const ro = new ResizeObserver(resize)
@@ -343,10 +347,11 @@ export default function IntelligencePage() {
         }
       }
 
+      const dpr = window.devicePixelRatio || 1
       drawGlobe(
         ctx,
-        canvas.width,
-        canvas.height,
+        canvas.width / dpr,
+        canvas.height / dpr,
         rotRef.current,
         arcGlowRef.current,
         showTrailRef.current,
@@ -480,8 +485,8 @@ export default function IntelligencePage() {
 
         {/* Globe panel */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', minWidth: 0 }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+          <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+            <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
           </div>
 
           {/* Timeline scrubber */}

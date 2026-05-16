@@ -7,58 +7,77 @@ import { useI18n } from '@/components/I18nProvider'
 
 /* ─── Globe SVG ─────────────────────────────────────────────────── */
 function HeroGlobe() {
+  // Orthographic projection: lat0=52°N, lon0=8°E, R=280, SVG center=(220,175)
+  // Cities follow the K4Z3 trail: Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona
   return (
     <svg viewBox="0 0 400 360" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-      {/* Globe base circle */}
-      <circle cx="200" cy="180" r="140" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-      <circle cx="200" cy="180" r="100" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-      <circle cx="200" cy="180" r="60" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-      {/* Latitude lines */}
-      <ellipse cx="200" cy="180" rx="140" ry="46" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-      <ellipse cx="200" cy="180" rx="140" ry="90" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-      {/* Longitude arcs */}
-      <path d="M200 40 Q240 180 200 320" stroke="rgba(255,255,255,0.06)" strokeWidth="1" fill="none" />
-      <path d="M200 40 Q160 180 200 320" stroke="rgba(255,255,255,0.06)" strokeWidth="1" fill="none" />
-      <path d="M200 40 Q280 180 200 320" stroke="rgba(255,255,255,0.04)" strokeWidth="1" fill="none" />
-      <path d="M200 40 Q120 180 200 320" stroke="rgba(255,255,255,0.04)" strokeWidth="1" fill="none" />
+      {/* Globe sphere */}
+      <circle cx="200" cy="180" r="148" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+      <circle cx="200" cy="180" r="108" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+      <ellipse cx="200" cy="180" rx="148" ry="49" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+      <ellipse cx="200" cy="180" rx="148" ry="95" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+      <path d="M200 32 Q246 180 200 328" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+      <path d="M200 32 Q154 180 200 328" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+      <path d="M200 32 Q290 180 200 328" stroke="rgba(255,255,255,0.03)" strokeWidth="1" fill="none" />
+      <path d="M200 32 Q110 180 200 328" stroke="rgba(255,255,255,0.03)" strokeWidth="1" fill="none" />
 
-      {/* Arc connections between cities */}
-      <path d="M195 100 Q230 140 255 160" stroke="rgba(251,191,36,0.6)" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
-      <path d="M195 100 Q155 145 148 175" stroke="rgba(251,191,36,0.4)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
-      <path d="M255 160 Q270 200 260 230" stroke="rgba(251,191,36,0.35)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
-      <path d="M148 175 Q150 210 165 240" stroke="rgba(251,191,36,0.3)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
-      <path d="M255 160 Q230 215 215 235" stroke="rgba(251,191,36,0.25)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
+      {/* Trail arcs — K4Z3 route (Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona) */}
+      {/* Oslo→Bergen */}
+      <path d="M227 137 Q226 124 214 134" stroke="rgba(251,191,36,0.55)" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
+      {/* Bergen→Trondheim */}
+      <path d="M214 134 Q224 113 225 119" stroke="rgba(251,191,36,0.5)" strokeWidth="1.4" fill="none" strokeDasharray="4 3" />
+      {/* Trondheim→Göteborg */}
+      <path d="M225 119 Q236 121 231 147" stroke="rgba(251,191,36,0.45)" strokeWidth="1.3" fill="none" strokeDasharray="4 3" />
+      {/* Göteborg→Copenhagen */}
+      <path d="M231 147 Q241 145 233 157" stroke="rgba(251,191,36,0.4)" strokeWidth="1.2" fill="none" strokeDasharray="4 3" />
+      {/* Copenhagen→Hamburg */}
+      <path d="M233 157 Q238 158 226 168" stroke="rgba(251,191,36,0.35)" strokeWidth="1.1" fill="none" strokeDasharray="4 3" />
+      {/* Hamburg→Amsterdam */}
+      <path d="M226 168 Q224 168 211 172" stroke="rgba(251,191,36,0.3)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
+      {/* Amsterdam→Barcelona */}
+      <path d="M211 172 Q206 204 199 226" stroke="rgba(251,191,36,0.5)" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
 
-      {/* City nodes */}
-      {/* Oslo — primary */}
-      <circle cx="195" cy="100" r="6" fill="oklch(0.76 0.15 65)" />
-      <circle cx="195" cy="100" r="12" fill="oklch(0.76 0.15 65)" opacity="0.2" />
-      <circle cx="195" cy="100" r="18" fill="oklch(0.76 0.15 65)" opacity="0.08" />
-      <text x="205" y="96" fill="white" fontSize="11" fontFamily="monospace" opacity="0.9">Oslo</text>
+      {/* Secondary node: Reykjavík */}
+      <circle cx="159" cy="103" r="2.5" fill="rgba(255,255,255,0.25)" />
+      <text x="113" y="101" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="monospace">Reykjavík</text>
+
+      {/* Trondheim — northernmost primary */}
+      <circle cx="225" cy="119" r="4" fill="oklch(0.76 0.15 65)" opacity="0.85" />
+      <circle cx="225" cy="119" r="8" fill="oklch(0.76 0.15 65)" opacity="0.15" />
+      <text x="230" y="116" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Trondheim</text>
 
       {/* Bergen */}
-      <circle cx="148" cy="175" r="4" fill="oklch(0.76 0.15 65)" />
-      <circle cx="148" cy="175" r="9" fill="oklch(0.76 0.15 65)" opacity="0.2" />
-      <text x="112" y="172" fill="white" fontSize="10" fontFamily="monospace" opacity="0.75">Bergen</text>
+      <circle cx="214" cy="134" r="3.5" fill="oklch(0.76 0.15 65)" />
+      <circle cx="214" cy="134" r="8" fill="oklch(0.76 0.15 65)" opacity="0.15" />
+      <text x="172" y="131" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Bergen</text>
+
+      {/* Oslo — primary hub */}
+      <circle cx="227" cy="137" r="6" fill="oklch(0.76 0.15 65)" />
+      <circle cx="227" cy="137" r="13" fill="oklch(0.76 0.15 65)" opacity="0.2" />
+      <circle cx="227" cy="137" r="20" fill="oklch(0.76 0.15 65)" opacity="0.07" />
+      <text x="237" y="133" fill="white" fontSize="11" fontFamily="monospace" fontWeight="600">Oslo</text>
+
+      {/* Göteborg */}
+      <circle cx="231" cy="147" r="3" fill="oklch(0.76 0.15 65)" opacity="0.7" />
+      <text x="237" y="144" fill="rgba(255,255,255,0.55)" fontSize="9" fontFamily="monospace">Göteborg</text>
 
       {/* Copenhagen */}
-      <circle cx="255" cy="160" r="4.5" fill="oklch(0.76 0.15 65)" />
-      <circle cx="255" cy="160" r="10" fill="oklch(0.76 0.15 65)" opacity="0.2" />
-      <text x="264" y="157" fill="white" fontSize="10" fontFamily="monospace" opacity="0.75">Copenhagen</text>
+      <circle cx="233" cy="157" r="3.5" fill="oklch(0.76 0.15 65)" opacity="0.75" />
+      <circle cx="233" cy="157" r="8" fill="oklch(0.76 0.15 65)" opacity="0.12" />
+      <text x="239" y="154" fill="rgba(255,255,255,0.65)" fontSize="9" fontFamily="monospace">Copenhagen</text>
 
-      {/* Stockholm */}
-      <circle cx="260" cy="230" r="4" fill="rgba(255,255,255,0.4)" />
-      <circle cx="260" cy="230" r="8" fill="rgba(255,255,255,0.1)" />
-      <text x="268" y="227" fill="rgba(255,255,255,0.55)" fontSize="10" fontFamily="monospace">Stockholm</text>
+      {/* Hamburg */}
+      <circle cx="226" cy="168" r="3" fill="rgba(255,255,255,0.45)" />
+      <text x="231" y="165" fill="rgba(255,255,255,0.45)" fontSize="9" fontFamily="monospace">Hamburg</text>
 
-      {/* Barcelona */}
-      <circle cx="165" cy="240" r="3.5" fill="rgba(255,255,255,0.3)" />
-      <circle cx="165" cy="240" r="7" fill="rgba(255,255,255,0.08)" />
-      <text x="110" y="237" fill="rgba(255,255,255,0.45)" fontSize="10" fontFamily="monospace">Barcelona</text>
+      {/* Amsterdam */}
+      <circle cx="211" cy="172" r="3" fill="rgba(255,255,255,0.4)" />
+      <text x="165" y="169" fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="monospace">Amsterdam</text>
 
-      {/* Trondheim */}
-      <circle cx="215" cy="235" r="3" fill="oklch(0.76 0.15 65)" opacity="0.7" />
-      <text x="220" y="248" fill="rgba(255,255,255,0.55)" fontSize="9" fontFamily="monospace">Trondheim</text>
+      {/* Barcelona — southern terminus */}
+      <circle cx="199" cy="226" r="5" fill="oklch(0.76 0.15 65)" opacity="0.9" />
+      <circle cx="199" cy="226" r="11" fill="oklch(0.76 0.15 65)" opacity="0.18" />
+      <text x="207" y="222" fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="monospace">Barcelona</text>
     </svg>
   )
 }
