@@ -33,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>{`
           :root {
             --font-display: var(--font-instrument-serif), 'Times New Roman', serif;

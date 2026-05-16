@@ -161,7 +161,7 @@ export default function InsurerPage() {
       {/* ── HERO ── */}
       <section style={{
         background: '#0A0A0A',
-        padding: '64px 40px',
+        padding: 'clamp(40px, 6vw, 64px) clamp(16px, 5vw, 40px)',
         textAlign: 'center',
       }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -192,10 +192,10 @@ export default function InsurerPage() {
         </div>
       </section>
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '52px 40px' }}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '52px 40px' }} className="gc-insurer-main">
 
         {/* ── KPI CARDS ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 48 }}>
+        <div className="r-grid-5" style={{ gap: 16, marginBottom: 48 }}>
           {KPIS.map(kpi => (
             <div key={kpi.label} style={{
               background: kpi.bg,
@@ -214,7 +214,7 @@ export default function InsurerPage() {
         </div>
 
         {/* ── CHARTS ROW ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
+        <div className="r-grid-2" style={{ gap: 24, marginBottom: 32 }}>
 
           {/* Claims density chart */}
           <div style={{ background: '#0A0A0A', borderRadius: 'var(--r-xl)', padding: 28 }}>
@@ -331,6 +331,7 @@ export default function InsurerPage() {
             </div>
             <span style={{ fontSize: 12, color: 'var(--ink-5)' }}>Click row for details →</span>
           </div>
+          <div className="r-scroll-x">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg)' }}>
@@ -385,6 +386,7 @@ export default function InsurerPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* ── PRE-FILLED CLAIM FEED ── */}
@@ -412,11 +414,11 @@ export default function InsurerPage() {
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg)')}
                   onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink)', fontWeight: 600 }}>{claim.id}</span>
-                    <span style={{ fontSize: 14, color: gdprBlur ? 'transparent' : 'var(--ink-3)', textShadow: gdprBlur ? '0 0 8px var(--ink-3)' : 'none' }}>{claim.address}</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>{claim.amount}</span>
-                    <span style={{ background: bc.bg, color: bc.color, fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '4px 10px', borderRadius: 'var(--r-pill)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', minWidth: 0 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink)', fontWeight: 600, flexShrink: 0 }}>{claim.id}</span>
+                    <span style={{ fontSize: 14, color: gdprBlur ? 'transparent' : 'var(--ink-3)', textShadow: gdprBlur ? '0 0 8px var(--ink-3)' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{claim.address}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{claim.amount}</span>
+                    <span style={{ background: bc.bg, color: bc.color, fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '4px 10px', borderRadius: 'var(--r-pill)', flexShrink: 0 }}>
                       {claim.badge}
                     </span>
                   </div>

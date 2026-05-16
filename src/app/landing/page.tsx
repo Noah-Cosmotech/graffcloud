@@ -171,13 +171,8 @@ export default function LandingPage() {
       <Nav active="product" />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section id="product" style={{ padding: '80px 40px 72px', maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 64,
-          alignItems: 'center',
-        }}>
+      <section id="product" style={{ padding: 'clamp(40px,7vw,80px) clamp(16px,5vw,40px) 72px', maxWidth: 1280, margin: '0 auto' }}>
+        <div className="r-grid-2 gc-hero-grid" style={{ gap: 64, alignItems: 'center' }}>
           {/* Left column */}
           <div>
             <div className="pill" style={{ marginBottom: 28 }}>
@@ -221,7 +216,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right column — dark globe card */}
-          <div style={{
+          <div className="gc-hero-right" style={{
             background: 'var(--ink)',
             borderRadius: 'var(--r-xl)',
             padding: 32,
@@ -294,14 +289,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── METRICS BAR ──────────────────────────────────────────── */}
-      <section style={{ background: 'var(--ink)', padding: '40px 40px' }}>
-        <div style={{
-          maxWidth: 1280,
-          margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 0,
-        }}>
+      <section className="gc-metrics-bar" style={{ background: 'var(--ink)', padding: '40px clamp(16px,5vw,40px)' }}>
+        <div className="r-grid-4" style={{ maxWidth: 1280, margin: '0 auto', gap: 0 }}>
           {[
             { num: '41,842', label: t('metric_incidents') },
             { num: '9+', label: t('metric_cities') },
@@ -332,7 +321,7 @@ export default function LandingPage() {
 
       {/* ── THESIS / ONTOLOGY ────────────────────────────────────── */}
       <section style={{ padding: '80px 40px', maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div className="r-grid-2" style={{ gap: 24 }}>
           {/* White card — ontology */}
           <div style={{
             background: 'var(--surface)',
@@ -449,11 +438,7 @@ export default function LandingPage() {
           }}>
             {t('section_how')}
           </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 24,
-          }}>
+          <div className="r-grid-4" style={{ gap: 24 }}>
             {[
               {
                 n: '01', title: t('step1_t'), desc: t('step1_d'),
@@ -530,12 +515,7 @@ export default function LandingPage() {
           </h2>
 
           {/* Live cities */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 16,
-            marginBottom: 16,
-          }}>
+          <div className="r-grid-6" style={{ gap: 16, marginBottom: 16 }}>
             {[
               { city: 'Oslo', incidents: '18,412', partners: '34' },
               { city: 'Bergen', incidents: '7,208', partners: '12' },
@@ -576,11 +556,7 @@ export default function LandingPage() {
           </div>
 
           {/* Coming soon */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 16,
-          }}>
+          <div className="r-grid-6" style={{ gap: 16 }}>
             {[
               { city: 'Kristiansand', eta: 'Q3 2026' },
               { city: 'Ålesund', eta: 'Q3 2026' },
@@ -622,7 +598,7 @@ export default function LandingPage() {
 
       {/* ── INSURERS ─────────────────────────────────────────────── */}
       <section id="insurers" style={{ padding: '80px 40px', maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+        <div className="r-grid-2" style={{ gap: 64, alignItems: 'center' }}>
           {/* Left */}
           <div>
             <SectionLabel>{t('insurers_title')}</SectionLabel>
@@ -736,7 +712,7 @@ export default function LandingPage() {
             <p style={{ fontSize: 15, color: 'var(--ink-3)', margin: 0 }}>{t('pricing_sub')}</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, alignItems: 'center' }}>
+          <div className="r-grid-3" style={{ gap: 20, alignItems: 'center' }}>
             {/* Starter */}
             <div style={{
               background: 'var(--surface)',

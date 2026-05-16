@@ -102,7 +102,7 @@ export default function BountyPage() {
       <ToastContainer />
 
       {/* Nav */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 32px', background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', background: 'var(--surface)', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
         <Link href="/" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)' }}>← {t('back')}</Link>
         <div style={{ width: 1, height: 18, background: 'var(--line-2)' }} />
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>{t('bounty_title')}</div>
@@ -114,12 +114,12 @@ export default function BountyPage() {
       </div>
 
       {/* Hero */}
-      <div style={{ background: 'var(--ink)', color: '#fff', padding: '56px 40px' }}>
+      <div style={{ background: 'var(--ink)', color: '#fff', padding: 'clamp(36px, 6vw, 56px) clamp(16px, 5vw, 40px)' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 14 }}>
             COMMUNITY INTELLIGENCE PROGRAM
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 52, lineHeight: 1.05, marginBottom: 20 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 8vw, 52px)', lineHeight: 1.05, marginBottom: 20 }}>
             Help identify vandals.<br />Get rewarded.
           </div>
           <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 16, marginBottom: 36, maxWidth: 520 }}>
@@ -141,8 +141,8 @@ export default function BountyPage() {
       </div>
 
       {/* Filters + Search */}
-      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)', padding: '16px 40px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)', padding: '16px 20px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: 8, flex: 1, flexWrap: 'wrap' }}>
             {CITIES.map(city => (
               <button key={city} onClick={() => setActiveCity(city)} style={{
@@ -154,19 +154,19 @@ export default function BountyPage() {
               }}>{city}</button>
             ))}
           </div>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ position: 'relative', flex: '1 1 160px', maxWidth: 260 }}>
             <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', fontSize: 14 }}>🔍</span>
             <input
               type="text" placeholder="Search code or location…"
               value={search} onChange={e => setSearch(e.target.value)}
-              style={{ paddingLeft: 34, paddingRight: 14, paddingTop: 9, paddingBottom: 9, border: '1px solid var(--line-2)', borderRadius: 10, fontSize: 13, color: 'var(--ink)', background: 'var(--bg)', fontFamily: 'var(--font-sans)', width: 220, outline: 'none' }}
+              style={{ paddingLeft: 34, paddingRight: 14, paddingTop: 9, paddingBottom: 9, border: '1px solid var(--line-2)', borderRadius: 10, fontSize: 13, color: 'var(--ink)', background: 'var(--bg)', fontFamily: 'var(--font-sans)', width: '100%', outline: 'none' }}
             />
           </div>
         </div>
       </div>
 
       {/* Cards grid */}
-      <div style={{ maxWidth: 940, margin: '40px auto', padding: '0 40px' }}>
+      <div style={{ maxWidth: 940, margin: '40px auto', padding: '0 16px' }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--ink-4)' }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>🔍</div>

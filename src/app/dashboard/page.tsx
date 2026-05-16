@@ -456,18 +456,10 @@ export default function DashboardPage() {
     : `${drawer.data.sig} · ${drawer.data.reward}`
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div className="gc-dash">
 
       {/* ── SIDEBAR ── */}
-      <aside style={{
-        width: 220,
-        flexShrink: 0,
-        background: 'var(--ink)',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
-      }}>
+      <aside className="gc-sidebar-panel">
         {/* Logo */}
         <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -549,8 +541,19 @@ export default function DashboardPage() {
         </div>
       </aside>
 
+      {/* ── MOBILE NAV BAR (hidden on desktop) ── */}
+      <div className="gc-mob-nav-bar">
+        <div className="gc-mob-nav-inner">
+          <Link href="/dashboard" className="mob-active">📁 Portfolio</Link>
+          <Link href="/intelligence">🌐 Intel</Link>
+          <Link href="/bounty">🎯 Bounty</Link>
+          <Link href="/billing">💳 Billing</Link>
+          <Link href="/upload">📷 Upload</Link>
+        </div>
+      </div>
+
       {/* ── MAIN CONTENT ── */}
-      <main style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <main className="gc-main-panel">
 
         {/* Top bar */}
         <div style={{
@@ -587,10 +590,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+        <div className="gc-dash-inner">
 
           {/* ── KPI CARDS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <div className="r-grid-4" style={{ gap: 14 }}>
             {[
               {
                 value: 'NOK 1.24M', label: t('dash_cost_ytd'),
@@ -642,6 +645,7 @@ export default function DashboardPage() {
                 <IconExport /> Export
               </button>
             </div>
+            <div className="r-scroll-x">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'var(--bg)' }}>
@@ -683,10 +687,11 @@ export default function DashboardPage() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* ── BOTTOM GRID: heatmap + properties ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
+          <div className="r-grid-2" style={{ gap: 14 }}>
 
             {/* Oslo Heatmap */}
             <OsloHeatmap />
@@ -733,7 +738,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── ALERTS + BOUNTIES ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="r-grid-2" style={{ gap: 14 }}>
 
             {/* Alerts */}
             <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)', overflow: 'hidden' }}>

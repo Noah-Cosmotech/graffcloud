@@ -148,7 +148,7 @@ export default function BillingPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Nav active="pricing" />
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '60px 40px' }}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '60px 40px' }} className="gc-billing-main">
 
         {/* ── PRICING SECTION ── */}
         <section style={{ marginBottom: 80 }}>
@@ -191,7 +191,7 @@ export default function BillingPage() {
           </div>
 
           {/* Cards grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, alignItems: 'start' }}>
+          <div className="r-grid-3" style={{ gap: 24, alignItems: 'start' }}>
 
             {/* STARTER */}
             <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-xl)', padding: 32, boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)' }}>
@@ -306,7 +306,7 @@ export default function BillingPage() {
               </div>
               <div style={{ marginBottom: 8 }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 400, color: 'var(--ink)' }}>
-                  NOK 24&hairsp;900
+                  NOK 24{' '}900
                 </span>
                 <span style={{ color: 'var(--ink-4)', fontSize: 14, marginLeft: 6 }}>/month</span>
               </div>
@@ -343,7 +343,7 @@ export default function BillingPage() {
         {/* ── CHECKOUT PANEL ── */}
         {selectedPlan && selectedPlan !== 'enterprise' && (
           <section id="gc-checkout-panel" style={{ marginBottom: 80 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 32, alignItems: 'start' }}>
+            <div className="r-grid-2" style={{ gap: 32, alignItems: 'start' }}>
 
               {/* Order summary */}
               <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-xl)', padding: 36, boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)' }}>
@@ -577,6 +577,7 @@ export default function BillingPage() {
             Invoice history
           </h3>
           <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-xl)', boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)', overflow: 'hidden' }}>
+            <div className="r-scroll-x">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--line)' }}>
@@ -643,6 +644,7 @@ export default function BillingPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </section>
       </main>
