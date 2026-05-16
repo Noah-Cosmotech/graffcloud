@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Drawer } from '@/components/Drawer'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { LangToggle } from '@/components/LangToggle'
+import { useI18n } from '@/components/I18nProvider'
 
 // ── types ─────────────────────────────────────────────────────────────────────
 interface BountyCard {
@@ -71,6 +73,7 @@ const CITIES = ['All', 'Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Drammen']
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function BountyPage() {
+  const { t } = useI18n()
   const [activeCity, setActiveCity] = useState('All')
   const [search, setSearch] = useState('')
   const [tipTarget, setTipTarget] = useState<BountyCard | null>(null)
@@ -100,12 +103,13 @@ export default function BountyPage() {
 
       {/* Nav */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 32px', background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
-        <Link href="/" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)' }}>← Back</Link>
+        <Link href="/" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)' }}>← {t('back')}</Link>
         <div style={{ width: 1, height: 18, background: 'var(--line-2)' }} />
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>Bounty Marketplace</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>{t('bounty_title')}</div>
         <div style={{ flex: 1 }} />
+        <LangToggle />
         <Link href="/upload" style={{ padding: '9px 18px', background: 'var(--ink)', color: '#fff', borderRadius: 99, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-          + Report Incident
+          {t('bounty_report')}
         </Link>
       </div>
 

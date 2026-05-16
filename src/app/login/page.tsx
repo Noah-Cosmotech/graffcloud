@@ -72,7 +72,7 @@ function BankIDIcon() {
 /* ─── Main page ─────────────────────────────────────────────────── */
 export default function LoginPage() {
   const router = useRouter()
-  const { lang } = useI18n()
+  const { t } = useI18n()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -89,9 +89,6 @@ export default function LoginPage() {
     setForgotSent(true)
     setTimeout(() => setForgotSent(false), 3000)
   }
-
-  const headingEN = 'Welcome back.'
-  const headingNO = 'Velkommen tilbake.'
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
@@ -216,7 +213,7 @@ export default function LoginPage() {
             margin: '0 0 36px',
             lineHeight: 1.05,
           }}>
-            {lang === 'no' ? headingNO : headingEN}
+            {t('login_welcome')}
           </h2>
 
           {/* SSO buttons */}
@@ -243,7 +240,7 @@ export default function LoginPage() {
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)' }}
             >
               <GoogleIcon />
-              Continue with Google
+              {t('login_google')}
             </button>
             <button
               onClick={() => router.push('/dashboard')}
@@ -267,7 +264,7 @@ export default function LoginPage() {
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)' }}
             >
               <MicrosoftIcon />
-              Continue with Microsoft
+              {t('login_microsoft')}
             </button>
           </div>
 
@@ -310,7 +307,7 @@ export default function LoginPage() {
             <input
               ref={passwordRef}
               type="password"
-              placeholder="Password"
+              placeholder={t('login_password_placeholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
@@ -334,7 +331,7 @@ export default function LoginPage() {
           <div style={{ textAlign: 'right' as const, marginBottom: 20 }}>
             {forgotSent ? (
               <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 500 }}>
-                Link sent ✓
+                {t('login_reset_sent')}
               </span>
             ) : (
               <button
@@ -362,7 +359,7 @@ export default function LoginPage() {
                   el.style.textDecorationColor = 'transparent'
                 }}
               >
-                Forgot password?
+                {t('login_forgot')}
               </button>
             )}
           </div>
@@ -402,7 +399,7 @@ export default function LoginPage() {
               el.style.boxShadow = 'none'
             }}
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t('login_signing_in') : t('login_submit')}
           </button>
 
           {/* BankID button */}
@@ -437,19 +434,19 @@ export default function LoginPage() {
             }}
           >
             <BankIDIcon />
-            Sign in with BankID
+            {t('login_bankid')}
           </button>
 
           {/* Signup link */}
           <div style={{ textAlign: 'center' as const, fontSize: 13.5, color: 'var(--ink-3)', marginBottom: 24 }}>
-            No account?{' '}
+            {t('login_no_account')}{' '}
             <Link href="/landing#pricing" style={{
               color: 'var(--ink)',
               fontWeight: 500,
               textDecoration: 'underline',
               textDecorationColor: 'var(--line-2)',
             }}>
-              View plans →
+              {t('login_request')} →
             </Link>
           </div>
 

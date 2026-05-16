@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { LangToggle } from '@/components/LangToggle'
+import { useI18n } from '@/components/I18nProvider'
 
 // ── types ─────────────────────────────────────────────────────────────────────
 interface Photo { id: string; url: string; name: string }
@@ -38,6 +40,7 @@ function formatTime(d: Date): string {
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function UploadPage() {
+  const { t } = useI18n()
   const [step, setStep] = useState(1)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [dragOver, setDragOver] = useState(false)
@@ -123,13 +126,13 @@ export default function UploadPage() {
 
       {/* Nav bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 32px', background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
-        <Link href="/" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)' }}>← Back</Link>
+        <Link href="/" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)' }}>← {t('back')}</Link>
         <div style={{ width: 1, height: 18, background: 'var(--line-2)' }} />
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>Report Incident</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>{t('upload_report')}</div>
         <div style={{ flex: 1 }} />
         {/* Stepper */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {['Photos', 'Details', 'Done'].map((label, i) => {
+          {[t('upload_photos'), t('upload_details'), t('upload_done')].map((label, i) => {
             const n = i + 1
             const done = step > n
             const active = step === n
@@ -151,6 +154,7 @@ export default function UploadPage() {
             )
           })}
         </div>
+        <LangToggle />
       </div>
 
       {/* Layout */}

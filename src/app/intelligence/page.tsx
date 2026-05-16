@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { LangToggle } from '@/components/LangToggle'
+import { useI18n } from '@/components/I18nProvider'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function colorWithAlpha(hex: string, a: number): string {
@@ -264,6 +266,7 @@ function drawGlobe(
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function IntelligencePage() {
+  const { t } = useI18n()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const rotRef = useRef(0)
@@ -443,13 +446,15 @@ export default function IntelligencePage() {
         flexShrink: 0, zIndex: 10, flexWrap: 'wrap'
       }}>
         <Link href="/" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: 13, fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          ← Back
+          ← {t('back')}
         </Link>
         <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.08em', color: 'var(--amber)', flex: 1 }}>
           K4Z3 — OSLO → BARCELONA
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <LangToggle />
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />
           <button onClick={handlePause} style={iconBtn}>
             {paused ? '▶' : '⏸'}
           </button>
@@ -462,11 +467,11 @@ export default function IntelligencePage() {
             }}>{s}×</button>
           ))}
           <button onClick={handleFullscreen} style={iconBtn} title="Fullscreen">⛶</button>
-          <button onClick={() => setShowTweaks(t => !t)} style={{
+          <button onClick={() => setShowTweaks(prev => !prev)} style={{
             ...iconBtn,
             background: showTweaks ? 'rgba(255,140,0,0.2)' : 'rgba(255,255,255,0.06)',
             color: showTweaks ? 'var(--amber)' : 'rgba(255,255,255,0.6)',
-          }}>Tweaks</button>
+          }}>{t('intel_tweaks')}</button>
         </div>
       </div>
 
@@ -518,7 +523,7 @@ export default function IntelligencePage() {
 
             {/* Cluster profile */}
             <div style={{ marginBottom: 20, padding: 16, background: 'rgba(255,140,0,0.07)', borderRadius: 12, border: '1px solid rgba(255,140,0,0.2)' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,140,0,0.6)', letterSpacing: '0.1em', marginBottom: 8 }}>CLUSTER PROFILE</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,140,0,0.6)', letterSpacing: '0.1em', marginBottom: 8 }}>{t('intel_cluster_profile')}</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--amber)', marginBottom: 4 }}>K4Z3</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {[['92.4%', 'confidence'], ['74', 'incidents'], ['9', 'cities'], ['NOK 1.8M', 'damage']].map(([v, l]) => (
@@ -532,7 +537,7 @@ export default function IntelligencePage() {
 
             {/* Movement log */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', marginBottom: 10 }}>MOVEMENT LOG</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', marginBottom: 10 }}>{t('intel_movement_log')}</div>
               {HOP_ROWS.map((hop, i) => (
                 <div key={i} onClick={() => handleHopClick(i)}
                   style={{
@@ -562,7 +567,7 @@ export default function IntelligencePage() {
 
             {/* Related entities */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', marginBottom: 10 }}>RELATED ENTITIES</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', marginBottom: 10 }}>{t('intel_related_entities')}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['BRG-09', 'AMS-17', 'rail-hop pattern'].map(e => (
                   <div key={e} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.06)', borderRadius: 99, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
@@ -578,7 +583,7 @@ export default function IntelligencePage() {
               borderRadius: 10, color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: 12,
               letterSpacing: '0.08em', cursor: 'pointer', fontWeight: 600,
             }}>
-              EXPORT DOSSIER →
+              {t('intel_export')} →
             </button>
           </div>
         </div>

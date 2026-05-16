@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Nav } from '@/components/Nav'
 import { Drawer } from '@/components/Drawer'
 import { ToastContainer, showToast } from '@/components/Toast'
+import { useI18n } from '@/components/I18nProvider'
 
 // ── Types ──
 interface Property {
@@ -110,6 +111,7 @@ const HEATMAP: number[][] = [
 
 // ── Main component ──
 export default function InsurerPage() {
+  const { t } = useI18n()
   const [drawerProperty, setDrawerProperty] = useState<Property | null>(null)
   const [drawerClaim, setDrawerClaim] = useState<Claim | null>(null)
   const [keyRevealed, setKeyRevealed] = useState(false)
@@ -167,10 +169,10 @@ export default function InsurerPage() {
             GRAFFCLOUD RISK INTELLIGENCE API · v2.4
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 56, fontWeight: 400, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 0 16px' }}>
-            Insurer Console
+            {t('insurers_title')}
           </h1>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.45)', margin: '0 0 36px', lineHeight: 1.6 }}>
-            Anonymised risk scores, predictive heatmaps and pre-filled claim intelligence for Nordic underwriters.
+            {t('insurers_sub')}
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             {PARTNERS.map(p => (

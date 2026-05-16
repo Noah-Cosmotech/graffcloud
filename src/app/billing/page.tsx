@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Nav } from '@/components/Nav'
 import { ToastContainer, showToast } from '@/components/Toast'
+import { useI18n } from '@/components/I18nProvider'
 
 type BillingPeriod = 'monthly' | 'annual'
 type PlanKey = 'starter' | 'pro' | 'enterprise'
@@ -90,6 +91,7 @@ function openPrintInvoice(inv: typeof INVOICES[0]) {
 }
 
 export default function BillingPage() {
+  const { t } = useI18n()
   const [billing, setBilling] = useState<BillingPeriod>('monthly')
   const [selectedPlan, setSelectedPlan] = useState<PlanKey | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
@@ -135,7 +137,7 @@ export default function BillingPage() {
             07 · PRICING
           </div>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 48, fontWeight: 400, letterSpacing: '-0.015em', lineHeight: 1.05, color: 'var(--ink)', margin: '0 0 32px' }}>
-            Pricing that scales with your portfolio
+            {t('pricing_title')}
           </h2>
 
           {/* Billing toggle */}
@@ -158,13 +160,13 @@ export default function BillingPage() {
                     transition: 'background .15s, color .15s',
                   }}
                 >
-                  {p === 'monthly' ? 'Monthly' : 'Annual'}
+                  {p === 'monthly' ? t('billing_monthly') : t('billing_annual')}
                 </button>
               ))}
             </div>
             {billing === 'annual' && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em', color: 'var(--green)', background: 'var(--green-wash)', padding: '4px 10px', borderRadius: 'var(--r-pill)' }}>
-                SAVES 20%
+                {t('billing_saves')}
               </span>
             )}
           </div>
@@ -184,7 +186,7 @@ export default function BillingPage() {
                 <span style={{ color: 'var(--ink-4)', fontSize: 14, marginLeft: 6 }}>/month</span>
               </div>
               {billing === 'annual' && (
-                <div style={{ fontSize: 12, color: 'var(--ink-5)', marginBottom: 8 }}>Billed annually</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-5)', marginBottom: 8 }}>{t('billing_billed_annual')}</div>
               )}
               <p style={{ fontSize: 14, color: 'var(--ink-4)', lineHeight: 1.5, margin: '0 0 24px' }}>
                 Up to 5 properties, 100 incidents/month.
@@ -202,7 +204,7 @@ export default function BillingPage() {
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => handleCheckout('starter')}
               >
-                Start free trial
+                {t('pricing_cta_start')}
               </button>
             </div>
 
@@ -217,7 +219,7 @@ export default function BillingPage() {
               border: '1px solid rgba(255,255,255,0.08)',
             }}>
               <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--amber)', color: '#0A0A0A', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', padding: '4px 14px', borderRadius: 'var(--r-pill)' }}>
-                MOST POPULAR
+                {t('billing_popular')}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', color: 'var(--amber)', marginBottom: 20 }}>
                 PROFESSIONAL
@@ -229,7 +231,7 @@ export default function BillingPage() {
                 <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginLeft: 6 }}>/month</span>
               </div>
               {billing === 'annual' && (
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>Billed annually</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>{t('billing_billed_annual')}</div>
               )}
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, margin: '0 0 24px' }}>
                 Up to 50 properties, unlimited incidents.
@@ -271,7 +273,7 @@ export default function BillingPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(245,158,11,0.4)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '' }}
               >
-                Start free trial
+                {t('pricing_cta_start')}
               </button>
             </div>
 
@@ -313,7 +315,7 @@ export default function BillingPage() {
                 className="btn btn-ghost"
                 style={{ width: '100%', justifyContent: 'center', display: 'flex' }}
               >
-                Talk to sales
+                {t('pricing_cta_contact')}
               </a>
             </div>
           </div>
@@ -536,7 +538,7 @@ export default function BillingPage() {
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)' }}>/mo</span>
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>
-                  {billing === 'annual' ? 'Billed annually · save 20%' : 'Billed monthly'}
+                  {billing === 'annual' ? `${t('billing_billed_annual')} · save 20%` : t('billing_monthly')}
                 </div>
                 <button
                   onClick={() => setSelectedPlan(null)}
