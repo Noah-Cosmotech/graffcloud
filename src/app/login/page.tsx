@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { GCLogo } from '@/components/GCLogo'
 import { LangToggle } from '@/components/LangToggle'
 import { useI18n } from '@/components/I18nProvider'
+import { showToast, ToastContainer } from '@/components/Toast'
 
 /* ─── Left-panel globe ──────────────────────────────────────────── */
 function LoginGlobe() {
@@ -78,20 +79,38 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({})
   const passwordRef = useRef<HTMLInputElement>(null)
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const validateFields = () => {
+    const newErrors: {email?: string; password?: string} = {}
+    if (!emailRegex.test(email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+    if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSignIn = () => {
+    if (!validateFields()) return
     setLoading(true)
     setTimeout(() => router.push('/dashboard'), 600)
   }
 
   const handleForgot = () => {
+    if (!emailRegex.test(email)) return
     setForgotSent(true)
     setTimeout(() => setForgotSent(false), 3000)
   }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
+      <ToastContainer />
 
       {/* ── LEFT PANEL ─────────────────────────────────────────── */}
       <div style={{
@@ -219,7 +238,7 @@ export default function LoginPage() {
           {/* SSO buttons */}
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10, marginBottom: 24 }}>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => showToast('Google sign-in available when connected to Supabase. For demo: use any email + password.')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -243,7 +262,7 @@ export default function LoginPage() {
               {t('login_google')}
             </button>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => showToast('Microsoft sign-in available when connected to Supabase. For demo: use any email + password.')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -284,54 +303,64 @@ export default function LoginPage() {
 
           {/* Email + password */}
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12, marginBottom: 16 }}>
-            <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && passwordRef.current?.focus()}
-              style={{
-                padding: '14px 16px',
-                borderRadius: 'var(--r-md)',
-                border: '1px solid var(--line-2)',
-                background: 'var(--surface)',
-                fontSize: 14,
-                color: 'var(--ink)',
-                fontFamily: 'var(--font-sans)',
-                outline: 'none',
-                transition: 'border-color .15s',
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)' }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--line-2)' }}
-            />
-            <input
-              ref={passwordRef}
-              type="password"
-              placeholder={t('login_password_placeholder')}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
-              style={{
-                padding: '14px 16px',
-                borderRadius: 'var(--r-md)',
-                border: '1px solid var(--line-2)',
-                background: 'var(--surface)',
-                fontSize: 14,
-                color: 'var(--ink)',
-                fontFamily: 'var(--font-sans)',
-                outline: 'none',
-                transition: 'border-color .15s',
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)' }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--line-2)' }}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+              <input
+                type="email"
+                placeholder={t('login_email_placeholder')}
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined })) }}
+                onKeyDown={(e) => e.key === 'Enter' && passwordRef.current?.focus()}
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: 'var(--r-md)',
+                  border: `1px solid ${errors.email ? '#ef4444' : 'var(--line-2)'}`,
+                  background: 'var(--surface)',
+                  fontSize: 14,
+                  color: 'var(--ink)',
+                  fontFamily: 'var(--font-sans)',
+                  outline: 'none',
+                  transition: 'border-color .15s',
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = errors.email ? '#ef4444' : 'var(--ink)' }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = errors.email ? '#ef4444' : 'var(--line-2)' }}
+              />
+              {errors.email && (
+                <span style={{ fontSize: 12, color: '#ef4444' }}>{errors.email}</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+              <input
+                ref={passwordRef}
+                type="password"
+                placeholder={t('login_password_placeholder')}
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: undefined })) }}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: 'var(--r-md)',
+                  border: `1px solid ${errors.password ? '#ef4444' : 'var(--line-2)'}`,
+                  background: 'var(--surface)',
+                  fontSize: 14,
+                  color: 'var(--ink)',
+                  fontFamily: 'var(--font-sans)',
+                  outline: 'none',
+                  transition: 'border-color .15s',
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = errors.password ? '#ef4444' : 'var(--ink)' }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = errors.password ? '#ef4444' : 'var(--line-2)' }}
+              />
+              {errors.password && (
+                <span style={{ fontSize: 12, color: '#ef4444' }}>{errors.password}</span>
+              )}
+            </div>
           </div>
 
           {/* Forgot password */}
           <div style={{ textAlign: 'right' as const, marginBottom: 20 }}>
             {forgotSent ? (
               <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 500 }}>
-                {t('login_reset_sent')}
+                Reset link sent to {email}
               </span>
             ) : (
               <button
@@ -404,7 +433,7 @@ export default function LoginPage() {
 
           {/* BankID button */}
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => showToast('BankID sign-in available when connected to Supabase. For demo: use any email + password.')}
             style={{
               padding: '14px 24px',
               background: '#003082',
@@ -466,7 +495,7 @@ export default function LoginPage() {
               <path d="M5 7l1.5 1.5L9 5.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span style={{ fontSize: 12, color: 'var(--ink-4)' }}>
-              ISO 27001 · GDPR compliant · SOC 2 Type II · Data stored in Norway
+              GDPR aligned · Data stored in Norway · ISO 27001 in progress
             </span>
           </div>
         </div>

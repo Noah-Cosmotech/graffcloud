@@ -125,7 +125,7 @@ export default function InsurerPage() {
   const [exportFormat, setExportFormat] = useState<'JSON' | 'CSV' | 'PDF'>('JSON')
 
   const LIVE_KEY = 'sk_live_gc_ins_••••••••••••••••••••••••••••••r4x9'
-  const REVEALED_KEY = 'sk_live_gc_ins_If3k9xMpQw2nBvLzRdY8tUjC1eHoGmr4x9'
+  const REVEALED_KEY = 'sk_demo_gc_ins_XXXXXXXXXXXXXXXXXXXX'
 
   function copyEndpoint(path: string) {
     navigator.clipboard.writeText(`https://api.graffcloud.no${path}`).catch(() => {})
@@ -443,19 +443,33 @@ export default function InsurerPage() {
           </div>
 
           {/* API Key */}
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--r-lg)', padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>LIVE API KEY</div>
-              <code style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.02em' }}>
-                {keyRevealed ? REVEALED_KEY : LIVE_KEY}
-              </code>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--r-lg)', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>LIVE API KEY</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <code style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.02em' }}>
+                    {keyRevealed ? REVEALED_KEY : LIVE_KEY}
+                  </code>
+                  {keyRevealed && (
+                    <span style={{ background: 'rgba(245,158,11,0.2)', color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 4 }}>
+                      DEMO KEY
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setKeyRevealed(r => !r)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', borderRadius: 'var(--r-pill)', padding: '7px 16px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}
+              >
+                {keyRevealed ? 'Hide key' : 'Reveal key'}
+              </button>
             </div>
-            <button
-              onClick={() => setKeyRevealed(r => !r)}
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', borderRadius: 'var(--r-pill)', padding: '7px 16px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}
-            >
-              {keyRevealed ? 'Hide key' : 'Reveal key'}
-            </button>
+            {keyRevealed && (
+              <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.35)', paddingLeft: 4 }}>
+                This is a demo key. Real keys are provisioned after contract signing.
+              </div>
+            )}
           </div>
 
           {/* Endpoints */}

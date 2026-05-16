@@ -63,6 +63,112 @@ const HEATMAP_DOTS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function getGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour <= 11) return 'Good morning'
+  if (hour >= 12 && hour <= 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function exportIncidentsCsv() {
+  const header = 'ID,Property,Date,Signature,Status,Cost(NOK)'
+  const rows = INCIDENTS.map(inc => {
+    const costNok = inc.cost.replace('NOK ', '').replace(/,/g, '')
+    const date = new Date().toLocaleDateString('no-NO')
+    const sig = inc.tag ?? ''
+    return [inc.id, `"${inc.address}"`, date, sig, inc.status, costNok].join(',')
+  })
+  const csv = [header, ...rows].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `graffcloud-incidents-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function openPoliceReferral(inc: typeof INCIDENTS[0]) {
+  const w = window.open('', '_blank', 'width=820,height=700')
+  if (!w) return
+  const now = new Date()
+  const timestamp = now.toLocaleString('no-NO', { dateStyle: 'long', timeStyle: 'medium' })
+  const coords = (inc.lat && inc.lng) ? `${inc.lat}° N, ${inc.lng}° E` : 'Not recorded'
+  w.document.write(`
+    <html><head><title>Police Referral — ${inc.id} — GraffCloud</title><style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Georgia', serif; background: #fff; color: #111; padding: 56px 64px; max-width: 760px; margin: 0 auto; }
+      .letterhead { display: flex; align-items: center; gap: 18px; padding-bottom: 24px; border-bottom: 3px solid #111; margin-bottom: 32px; }
+      .logo-mark { width: 42px; height: 42px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FFA500; font-size: 22px; font-weight: 900; font-family: monospace; flex-shrink: 0; }
+      .org { font-family: monospace; }
+      .org-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+      .org-sub { font-size: 12px; color: #666; margin-top: 2px; }
+      .doc-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+      .doc-ref { font-size: 13px; color: #555; font-family: monospace; margin-bottom: 32px; }
+      .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 10px; margin-top: 28px; }
+      .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
+      .field { margin-bottom: 2px; }
+      .field-key { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #888; margin-bottom: 3px; }
+      .field-val { font-size: 15px; font-weight: 500; font-family: monospace; }
+      .summary-box { margin-top: 28px; padding: 20px 24px; border: 1px solid #ddd; border-left: 4px solid #111; background: #fafafa; }
+      .summary-text { font-size: 14px; line-height: 1.7; color: #333; }
+      .footer { margin-top: 52px; padding-top: 20px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: flex-end; }
+      .footer-left { font-size: 12px; color: #777; line-height: 1.6; }
+      .footer-brand { font-family: monospace; font-size: 13px; font-weight: 700; color: #111; }
+      @media print { body { padding: 32px; } }
+    </style></head><body>
+      <div class="letterhead">
+        <div class="logo-mark">GC</div>
+        <div class="org">
+          <div class="org-name">GraffCloud</div>
+          <div class="org-sub">Digital Evidence Platform · graffcloud.no</div>
+        </div>
+      </div>
+
+      <div class="doc-title">Police Referral</div>
+      <div class="doc-ref">Ref: ${inc.id} · Generated ${timestamp}</div>
+
+      <div class="section-label">Incident Details</div>
+      <div class="field-grid">
+        <div class="field"><div class="field-key">Incident ID</div><div class="field-val">${inc.id}</div></div>
+        <div class="field"><div class="field-key">Status</div><div class="field-val">${inc.status}</div></div>
+        <div class="field"><div class="field-key">Property / Address</div><div class="field-val">${inc.address}</div></div>
+        <div class="field"><div class="field-key">Damage Cost</div><div class="field-val">${inc.cost}</div></div>
+        <div class="field"><div class="field-key">Graffiti Signature</div><div class="field-val">${inc.tag ?? 'Not identified'}</div></div>
+        <div class="field"><div class="field-key">AI Match Confidence</div><div class="field-val">${inc.match ? inc.match + '%' : 'Pending analysis'}</div></div>
+        <div class="field"><div class="field-key">GPS Coordinates</div><div class="field-val">${coords}</div></div>
+        <div class="field"><div class="field-key">Reported Date</div><div class="field-val">${now.toLocaleDateString('no-NO')}</div></div>
+      </div>
+
+      <div class="section-label">Case Summary</div>
+      <div class="summary-box">
+        <div class="summary-text">
+          This referral concerns incident ${inc.id} at ${inc.address}, with estimated damage of ${inc.cost}.
+          ${inc.tag ? `The graffiti signature <strong>${inc.tag}</strong> has been identified with ${inc.match}% AI confidence against the Nordic cluster database, indicating a known perpetrator active in the Oslo metropolitan area.` : 'The graffiti signature is currently awaiting AI analysis against the Nordic cluster database.'}
+          Photo evidence has been sealed with GPS metadata and timestamp via the GraffCloud mobile platform, ensuring chain-of-custody integrity.
+          All digital evidence is available for law enforcement review upon request.
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-left">
+          <div class="footer-brand">GraffCloud</div>
+          Submitted via GraffCloud digital evidence platform<br>
+          ${timestamp}<br>
+          This document was generated automatically from verified incident data.
+        </div>
+        <div style="font-family:monospace;font-size:11px;color:#aaa;text-align:right">
+          graffcloud.no<br>
+          evidence@graffcloud.no
+        </div>
+      </div>
+    </body></html>
+  `)
+  w.document.close()
+}
+
 function statusColor(status: string): { bg: string; color: string } {
   switch (status) {
     case 'MATCHED': return { bg: 'var(--amber-wash)', color: 'var(--amber-ink)' }
@@ -462,7 +568,7 @@ export default function DashboardPage() {
         }}>
           <div style={{ flex: 1 }}>
             <h1 style={{ margin: 0, fontSize: 20, fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
-              {t('dash_greeting')}
+              {getGreeting()}, Marte
             </h1>
             <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--ink-4)' }}>{t('dash_sub')}</p>
           </div>
@@ -530,7 +636,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid var(--line)' }}>
               <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{t('dash_recent')}</h2>
               <button
-                onClick={() => showToast('Exporting incidents to CSV…')}
+                onClick={exportIncidentsCsv}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, border: '1px solid var(--line-2)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--ink-3)' }}
               >
                 <IconExport /> Export
@@ -736,7 +842,7 @@ export default function DashboardPage() {
               <button
                 className="btn btn-primary"
                 style={{ fontSize: 13, padding: '9px 18px' }}
-                onClick={() => { showToast('Police referral sent ✓', 'success'); closeDrawer() }}
+                onClick={() => { openPoliceReferral(drawer!.data as typeof INCIDENTS[0]); closeDrawer() }}
               >
                 Refer to police
               </button>

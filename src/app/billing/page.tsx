@@ -95,6 +95,7 @@ export default function BillingPage() {
   const [billing, setBilling] = useState<BillingPeriod>('monthly')
   const [selectedPlan, setSelectedPlan] = useState<PlanKey | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [cardNum, setCardNum] = useState('')
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
@@ -102,15 +103,33 @@ export default function BillingPage() {
 
   function handleCheckout(plan: PlanKey) {
     setSelectedPlan(plan)
-    console.log('[GraffCloud] Checkout initiated:', { plan, billing })
     setTimeout(() => {
       document.getElementById('gc-checkout-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    showToast('Checkout coming soon — connect your Stripe keys', 'default')
+    if (!selectedPlan) return
+    setCheckoutLoading(true)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: selectedPlan, billing }),
+      })
+      if (!res.ok) throw new Error('stripe_not_configured')
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('no_url')
+      }
+    } catch {
+      showToast('Stripe not configured yet — add your keys in Vercel to enable checkout.', 'default')
+    } finally {
+      setCheckoutLoading(false)
+    }
   }
 
   const prices: Record<PlanKey, { monthly: string; annual: string; label: string }> = {
@@ -498,9 +517,10 @@ export default function BillingPage() {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      style={{ width: '100%', justifyContent: 'center', marginTop: 20, padding: '14px 20px', fontSize: 15, fontWeight: 600 }}
+                      disabled={checkoutLoading}
+                      style={{ width: '100%', justifyContent: 'center', marginTop: 20, padding: '14px 20px', fontSize: 15, fontWeight: 600, opacity: checkoutLoading ? 0.7 : 1, cursor: checkoutLoading ? 'not-allowed' : 'pointer' }}
                     >
-                      Start 30-day trial
+                      {checkoutLoading ? 'Processing…' : 'Start 30-day trial'}
                     </button>
                   </form>
                 </div>
