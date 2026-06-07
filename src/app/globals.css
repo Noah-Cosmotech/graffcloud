@@ -354,3 +354,24 @@ body {
   .gc-metrics-bar { padding: 28px 20px !important; }
   .gc-metrics-bar > div { border-right: none !important; padding: 8px 16px !important; }
 }
+
+/* ── UPLOAD PAGE ─────────────────────────────────────────────── */
+.gc-upload-wrap { display: flex; min-height: calc(100dvh - 61px); max-width: 1200px; margin: 0 auto; }
+.gc-upload-form { flex: 1; padding: 32px 40px; min-width: 0; }
+.gc-upload-right { width: 320px; border-left: 1px solid var(--line); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+.gc-stepper-desktop { display: flex; align-items: center; gap: 6px; }
+.gc-stepper-mobile { display: none; }
+.gc-step-label { font-size: 12px; font-weight: 500; }
+
+@media (max-width: 640px) {
+  .gc-stepper-desktop { display: none !important; }
+  .gc-stepper-mobile { display: flex !important; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .gc-stepper-mobile::-webkit-scrollbar { display: none; }
+  .gc-upload-wrap { flex-direction: column; }
+  .gc-upload-form { padding: 20px 16px; }
+  .gc-upload-right { width: 100%; border-left: none; border-top: 1px solid var(--line); }
+}
+
+@media (max-width: 400px) {
+  .gc-step-label { display: none; }
+}
