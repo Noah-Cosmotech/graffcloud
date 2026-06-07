@@ -89,7 +89,62 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-function exportIncidentsCsv(incidents: typeof DEMO_INCIDENTS) {
+// ─── Display model types (shared by demo and live data) ───────────────────────
+
+type DisplayIncident = {
+  id: string; address: string; tag: string | null; cost: string
+  status: string; match: number | null; lat: number; lng: number
+}
+type DisplayProperty = { name: string; readiness: number; cost: string; color: string }
+type DisplayAlert    = { level: string; color: string; dot: string; text: string }
+type DisplayBounty   = { id: string; sig: string; reward: string; incidents: number; zone: string; posted: string; status: string }
+
+// ─── Supabase SELECT row types ────────────────────────────────────────────────
+
+type PropRow = { id: string; name: string; address: string; city: string; readiness_score: number }
+type IncRow = {
+  id: string; property_id: string; date: string
+  cost_nok: number | null; status: string
+  signature_id: string | null; ai_match_confidence: number | null
+  gps_lat: number | null; gps_lng: number | null
+}
+type BountyRow = {
+  id: string; signature_id: string | null; amount_nok: number
+  status: string; city: string | null; created_at: string; tips_count: number | null
+}
+
+// ─── Live-data helpers ────────────────────────────────────────────────────────
+
+function formatNok(amount: number): string {
+  if (amount === 0) return 'NOK 0'
+  return 'NOK ' + Math.round(amount).toLocaleString('no-NO')
+}
+
+function formatNokK(amount: number): string {
+  if (amount === 0) return 'NOK 0'
+  return amount >= 1000 ? `NOK ${Math.round(amount / 1000)}k` : formatNok(amount)
+}
+
+function scoreToColorKey(score: number): string {
+  if (score >= 75) return 'red'
+  if (score >= 50) return 'amber'
+  return 'green'
+}
+
+function incidentDisplayId(uuid: string): string {
+  return 'INC-' + uuid.split('-')[0].toUpperCase()
+}
+
+// GPS → SVG coordinate for Oslo heatmap (viewBox 0 0 100 80)
+function gpsToHeatDot(lat: number, lng: number, status: string) {
+  return {
+    x: Math.max(5, Math.min(95, ((lng - 10.60) / 0.25) * 90 + 5)),
+    y: Math.max(5, Math.min(75, ((59.98 - lat) / 0.13) * 70 + 5)),
+    status,
+  }
+}
+
+function exportIncidentsCsv(incidents: DisplayIncident[]) {
   const header = 'ID,Property,Date,Signature,Status,Cost(NOK)'
   const rows = incidents.map(inc => {
     const costNok = inc.cost.replace('NOK ', '').replace(/,/g, '')
@@ -109,7 +164,7 @@ function exportIncidentsCsv(incidents: typeof DEMO_INCIDENTS) {
   URL.revokeObjectURL(url)
 }
 
-function openPoliceReferral(inc: typeof DEMO_INCIDENTS[0]) {
+function openPoliceReferral(inc: DisplayIncident) {
   const w = window.open('', '_blank', 'width=820,height=700')
   if (!w) return
   const now = new Date()
@@ -317,7 +372,7 @@ function IconExport() {
 
 // ─── Drawer content components ────────────────────────────────────────────────
 
-function IncidentDrawerContent({ inc }: { inc: typeof DEMO_INCIDENTS[0] }) {
+function IncidentDrawerContent({ inc }: { inc: DisplayIncident }) {
   const sc = statusColor(inc.status)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -343,7 +398,7 @@ function IncidentDrawerContent({ inc }: { inc: typeof DEMO_INCIDENTS[0] }) {
   )
 }
 
-function PropertyDrawerContent({ prop }: { prop: typeof DEMO_PROPERTIES[0] }) {
+function PropertyDrawerContent({ prop }: { prop: DisplayProperty }) {
   const barColor = readinessColor(prop.color)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -371,7 +426,7 @@ function PropertyDrawerContent({ prop }: { prop: typeof DEMO_PROPERTIES[0] }) {
   )
 }
 
-function BountyDrawerContent({ bounty }: { bounty: typeof DEMO_BOUNTIES[0] }) {
+function BountyDrawerContent({ bounty }: { bounty: DisplayBounty }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -450,9 +505,9 @@ function OsloHeatmap({ dots }: { dots: typeof HEATMAP_DOTS }) {
 // ─── Main dashboard ───────────────────────────────────────────────────────────
 
 type DrawerContent =
-  | { type: 'incident'; data: typeof DEMO_INCIDENTS[0] }
-  | { type: 'property'; data: typeof DEMO_PROPERTIES[0] }
-  | { type: 'bounty'; data: typeof DEMO_BOUNTIES[0] }
+  | { type: 'incident'; data: DisplayIncident }
+  | { type: 'property'; data: DisplayProperty }
+  | { type: 'bounty'; data: DisplayBounty }
 
 export default function DashboardPage() {
   const { t } = useI18n()
@@ -491,6 +546,93 @@ export default function DashboardPage() {
     if (stored === '1') setShowDemo(true)
   }, [])
 
+  // ── Live data state ──
+  const [liveIncidents, setLiveIncidents] = useState<DisplayIncident[]>([])
+  const [liveProperties, setLiveProperties] = useState<DisplayProperty[]>([])
+  const [liveBounties, setLiveBounties] = useState<DisplayBounty[]>([])
+  const [liveAlerts, setLiveAlerts] = useState<DisplayAlert[]>([])
+
+  // ── Fetch from Supabase (runs once after mount) ──
+  useEffect(() => {
+    if (!authConfigured) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const supabase = createClient()
+
+        const [propRes, incRes, bountyRes] = await Promise.all([
+          supabase.from('properties').select('id,name,address,city,readiness_score').order('created_at', { ascending: false }),
+          supabase.from('incidents').select('id,property_id,date,cost_nok,status,signature_id,ai_match_confidence,gps_lat,gps_lng').order('created_at', { ascending: false }).limit(100),
+          supabase.from('bounties').select('id,signature_id,amount_nok,status,city,created_at,tips_count').eq('status', 'open').order('created_at', { ascending: false }).limit(20),
+        ])
+
+        if (cancelled) return
+
+        const props = ((propRes.data ?? []) as unknown) as PropRow[]
+        const incs  = ((incRes.data  ?? []) as unknown) as IncRow[]
+        const bountiesRaw = ((bountyRes.data ?? []) as unknown) as BountyRow[]
+
+        const propMap = new Map(props.map(p => [p.id, p]))
+
+        // Per-property cost total
+        const propCostMap = new Map<string, number>()
+        for (const inc of incs) {
+          propCostMap.set(inc.property_id, (propCostMap.get(inc.property_id) ?? 0) + (inc.cost_nok ?? 0))
+        }
+
+        const mappedIncs: DisplayIncident[] = incs.map(inc => ({
+          id: incidentDisplayId(inc.id),
+          address: propMap.get(inc.property_id)?.address ?? '—',
+          tag: inc.signature_id ?? null,
+          cost: formatNok(inc.cost_nok ?? 0),
+          status: (inc.status ?? 'new').toUpperCase(),
+          match: inc.ai_match_confidence ?? null,
+          lat: inc.gps_lat ?? 0,
+          lng: inc.gps_lng ?? 0,
+        }))
+
+        const mappedProps: DisplayProperty[] = props.map(p => ({
+          name: p.name,
+          readiness: p.readiness_score,
+          cost: formatNokK(propCostMap.get(p.id) ?? 0),
+          color: scoreToColorKey(p.readiness_score),
+        }))
+
+        const mappedBounties: DisplayBounty[] = bountiesRaw.map(b => ({
+          id: 'BNT-' + b.id.split('-')[0].toUpperCase(),
+          sig: b.signature_id ?? '—',
+          reward: formatNok(b.amount_nok),
+          incidents: b.tips_count ?? 0,
+          zone: b.city ?? '—',
+          posted: new Date(b.created_at).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' }),
+          status: (b.status ?? 'open').toUpperCase(),
+        }))
+
+        // Derive alerts from live data
+        const derivedAlerts: DisplayAlert[] = []
+        const matched = mappedIncs.filter(i => i.status === 'MATCHED')
+        if (matched.length > 0) {
+          derivedAlerts.push({ level: 'CRITICAL', color: '#EF4444', dot: '#EF4444', text: `${matched[0].tag ?? 'Signature'} confirmed match — ${matched[0].address}` })
+        }
+        const lowReadiness = mappedProps.filter(p => p.readiness < 50)
+        if (lowReadiness.length > 0) {
+          derivedAlerts.push({ level: 'WARNING', color: '#F59E0B', dot: '#F59E0B', text: `Readiness below threshold: ${lowReadiness[0].name} (${lowReadiness[0].readiness}%)` })
+        }
+        if (mappedBounties.length > 0) {
+          derivedAlerts.push({ level: 'INFO', color: '#3B82F6', dot: '#3B82F6', text: `${mappedBounties.length} open ${mappedBounties.length === 1 ? 'bounty' : 'bounties'} — ${mappedBounties[0].reward}` })
+        }
+
+        setLiveIncidents(mappedIncs)
+        setLiveProperties(mappedProps)
+        setLiveBounties(mappedBounties)
+        setLiveAlerts(derivedAlerts)
+      } catch {
+        /* fail silently — empty state remains */
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
   function toggleDemo() {
     setShowDemo(prev => {
       const next = !prev
@@ -499,21 +641,34 @@ export default function DashboardPage() {
     })
   }
 
-  const incidents = showDemo ? DEMO_INCIDENTS : []
-  const properties = showDemo ? DEMO_PROPERTIES : []
-  const alerts = showDemo ? DEMO_ALERTS : []
-  const bounties = showDemo ? DEMO_BOUNTIES : []
-  const heatmapDots = showDemo ? HEATMAP_DOTS : []
+  // ── Derived display arrays ──
+  const incidents = showDemo ? DEMO_INCIDENTS : liveIncidents
+  const properties = showDemo ? DEMO_PROPERTIES : liveProperties
+  const alerts = showDemo ? DEMO_ALERTS : liveAlerts
+  const bounties = showDemo ? DEMO_BOUNTIES : liveBounties
+
+  const liveHeatDots = liveIncidents
+    .filter(i => i.lat !== 0 && i.lng !== 0)
+    .map(i => gpsToHeatDot(i.lat, i.lng, i.status))
+  const heatmapDots = showDemo ? HEATMAP_DOTS : liveHeatDots
+
+  // ── Live KPIs ──
+  const liveTotalCost = liveIncidents.reduce((s, i) => s + (parseInt(i.cost.replace(/[^\d]/g, ''), 10) || 0), 0)
+  const liveIncCount  = liveIncidents.length
+  const liveAvgRead   = liveProperties.length > 0
+    ? Math.round(liveProperties.reduce((s, p) => s + p.readiness, 0) / liveProperties.length)
+    : null
+  const liveOpenBounties = liveBounties.length
 
   function closeDrawer() { setDrawer(null) }
 
-  function openIncident(inc: typeof DEMO_INCIDENTS[0]) {
+  function openIncident(inc: DisplayIncident) {
     setDrawer({ type: 'incident', data: inc })
   }
-  function openProperty(prop: typeof DEMO_PROPERTIES[0]) {
+  function openProperty(prop: DisplayProperty) {
     setDrawer({ type: 'property', data: prop })
   }
-  function openBounty(bounty: typeof DEMO_BOUNTIES[0]) {
+  function openBounty(bounty: DisplayBounty) {
     setDrawer({ type: 'bounty', data: bounty })
   }
 
@@ -731,10 +886,26 @@ export default function DashboardPage() {
                   },
                 ]
               : [
-                  { value: 'NOK 0', label: t('dash_cost_ytd'), onClick: () => showToast('No incidents reported yet') },
-                  { value: '0', label: t('dash_incidents_30'), onClick: () => showToast('No incidents reported yet') },
-                  { value: '—', label: t('dash_readiness'), onClick: () => showToast('Add a property to track readiness') },
-                  { value: '0', label: t('dash_open_bounties'), onClick: () => showToast('No bounties posted yet') },
+                  {
+                    value: liveTotalCost > 0 ? formatNokK(liveTotalCost) : 'NOK 0',
+                    label: t('dash_cost_ytd'),
+                    onClick: () => showToast(liveTotalCost > 0 ? `Total across ${liveIncCount} incident${liveIncCount !== 1 ? 's' : ''}` : 'No incidents reported yet'),
+                  },
+                  {
+                    value: String(liveIncCount),
+                    label: t('dash_incidents_30'),
+                    onClick: () => showToast(liveIncCount > 0 ? `${liveIncCount} incident${liveIncCount !== 1 ? 's' : ''} in your portfolio` : 'No incidents reported yet'),
+                  },
+                  {
+                    value: liveAvgRead !== null ? `${liveAvgRead}%` : '—',
+                    label: t('dash_readiness'),
+                    onClick: () => showToast(liveProperties.length > 0 ? `Average across ${liveProperties.length} propert${liveProperties.length !== 1 ? 'ies' : 'y'}` : 'Add a property to track readiness'),
+                  },
+                  {
+                    value: String(liveOpenBounties),
+                    label: t('dash_open_bounties'),
+                    onClick: () => showToast(liveOpenBounties > 0 ? `${liveOpenBounties} open ${liveOpenBounties === 1 ? 'bounty' : 'bounties'}` : 'No bounties posted yet'),
+                  },
                 ]
             ).map((kpi, i) => (
               <button
@@ -1000,7 +1171,8 @@ export default function DashboardPage() {
               <button
                 className="btn btn-primary"
                 style={{ fontSize: 13, padding: '9px 18px' }}
-                onClick={() => { openPoliceReferral(drawer!.data as typeof DEMO_INCIDENTS[0]); closeDrawer() }}
+                onClick={() => { openPoliceReferral(drawer!.data as DisplayIncident); closeDrawer() }}
+
               >
                 Refer to police
               </button>
