@@ -6,8 +6,12 @@ import { showToast, ToastContainer } from '@/components/Toast'
 import { LangToggle } from '@/components/LangToggle'
 import { useI18n } from '@/components/I18nProvider'
 
+const authConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
 // ── types ─────────────────────────────────────────────────────────────────────
-interface Photo { id: string; url: string; name: string }
+interface Photo { id: string; url: string; name: string; file: File }
 interface GeoCoords { lat: number; lon: number; accuracy?: number }
 
 const AI_MATCHES = [
@@ -56,6 +60,8 @@ export default function UploadPage() {
   const [now, setNow] = useState(new Date())
   const [uploadStage, setUploadStage] = useState(0)
   const [selectedMatch, setSelectedMatch] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [incidentDisplayId, setIncidentDisplayId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -92,7 +98,7 @@ export default function UploadPage() {
     Array.from(files).forEach(file => {
       if (!file.type.startsWith('image/')) return
       const url = URL.createObjectURL(file)
-      setPhotos(prev => [...prev, { id: Math.random().toString(36).slice(2), url, name: file.name }])
+      setPhotos(prev => [...prev, { id: Math.random().toString(36).slice(2), url, name: file.name, file }])
     })
   }
 
@@ -117,13 +123,47 @@ export default function UploadPage() {
     setStep(2)
   }
 
-  const goStep3 = () => {
+  const goStep3 = async () => {
     if (!property.trim()) { showToast('Please enter the property address', 'error'); return }
     if (postBounty && (!bountyAmount || Number(bountyAmount) < 1000)) {
       showToast('Bounty minimum is NOK 1,000', 'error'); return
     }
-    setStep(3)
-    showToast('Incident submitted successfully', 'success')
+
+    setSubmitting(true)
+    setStep(3) // show progress immediately
+
+    if (!authConfigured) {
+      // Demo mode — no backend call, fake success
+      setIncidentDisplayId('INC-DEMO01')
+      setSubmitting(false)
+      return
+    }
+
+    try {
+      const form = new FormData()
+      photos.forEach(p => form.append('photos', p.file))
+      form.append('property', property.trim())
+      form.append('date', incidentDate)
+      form.append('cost', cost || '0')
+      form.append('lat', String(coords.lat))
+      form.append('lon', String(coords.lon))
+      form.append('geoValid', geoError ? '0' : '1')
+      form.append('hash', sealHash)
+      if (postBounty && bountyAmount) form.append('bountyAmount', bountyAmount)
+
+      const res = await fetch('/api/incidents', { method: 'POST', body: form })
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error ?? 'Submission failed')
+      setIncidentDisplayId(data.displayId)
+      showToast('Incident saved successfully', 'success')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Submission failed'
+      showToast(message, 'error')
+      setStep(2)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const sealHash = hashString(`${coords.lat},${coords.lon},${now.toISOString()},${photos.map(p => p.name).join(',')}`)
@@ -325,7 +365,13 @@ export default function UploadPage() {
 
               <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
                 <button onClick={() => setStep(1)} style={ghostBtn}>← Back</button>
-                <button onClick={goStep3} style={primaryBtn}>Submit Incident →</button>
+                <button
+                  onClick={goStep3}
+                  disabled={submitting}
+                  style={{ ...primaryBtn, opacity: submitting ? 0.6 : 1, cursor: submitting ? 'not-allowed' : 'pointer' }}
+                >
+                  {submitting ? 'Submitting…' : 'Submit Incident →'}
+                </button>
               </div>
             </div>
           )}
@@ -337,7 +383,9 @@ export default function UploadPage() {
                 <div style={{ fontSize: 40 }}>✓</div>
               </div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 38, marginBottom: 8 }}>Incident Reported</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: 'var(--amber)', marginBottom: 8 }}>INC-05105</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: 'var(--amber)', marginBottom: 8 }}>
+                {incidentDisplayId ?? 'Saving…'}
+              </div>
               <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 40 }}>Your report has been securely sealed and submitted to the GraffCloud platform.</div>
 
               {/* Upload stages */}
@@ -374,8 +422,18 @@ export default function UploadPage() {
               </div>
 
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link href="/intelligence" style={{ ...primaryBtn as React.CSSProperties, textDecoration: 'none' }}>View Trail Map →</Link>
-                <button onClick={() => { setStep(1); setPhotos([]); setProperty(''); setBountyAmount(''); setPostBounty(false) }} style={ghostBtn}>Report Another</button>
+                {incidentDisplayId && (
+                  <Link href="/intelligence" style={{ ...primaryBtn as React.CSSProperties, textDecoration: 'none' }}>View Trail Map →</Link>
+                )}
+                <button
+                  onClick={() => {
+                    setStep(1); setPhotos([]); setProperty(''); setBountyAmount('')
+                    setPostBounty(false); setIncidentDisplayId(null)
+                  }}
+                  style={ghostBtn}
+                >
+                  Report Another
+                </button>
               </div>
             </div>
           )}
