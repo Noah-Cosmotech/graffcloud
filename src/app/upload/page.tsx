@@ -358,14 +358,18 @@ export default function UploadPage() {
                 })}
               </div>
 
-              <div style={{ background: 'rgba(255,140,0,0.07)', border: '1px solid rgba(255,140,0,0.2)', borderRadius: 14, padding: '20px 24px', maxWidth: 400, margin: '0 auto 32px', textAlign: 'left' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.1em', marginBottom: 12 }}>AI MATCH CONFIRMED</div>
+              <div style={{ background: 'rgba(255,140,0,0.07)', border: '1px solid rgba(255,140,0,0.2)', borderRadius: 14, padding: '20px 24px', maxWidth: 400, margin: '0 auto 32px', textAlign: 'left', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 10, right: 12, fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.08em', color: 'var(--ink-5)', background: 'var(--surface)', padding: '2px 6px', borderRadius: 4 }}>SAMPLE</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.1em', marginBottom: 12 }}>AI MATCH — PILOT PREVIEW</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--amber)' }}>K4Z3</div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>92% confidence</div>
                     <div style={{ fontSize: 13, color: 'var(--ink-4)' }}>74 prior incidents across 9 cities</div>
                   </div>
+                </div>
+                <div style={{ marginTop: 12, fontSize: 11, color: 'var(--ink-5)', lineHeight: 1.5 }}>
+                  Crew matching uses sample data during the pilot. Real signature matching activates once your portfolio reaches 25 sealed incidents.
                 </div>
               </div>
 

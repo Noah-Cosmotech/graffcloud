@@ -2,11 +2,15 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { GCLogo } from '@/components/GCLogo'
 import { LangToggle } from '@/components/LangToggle'
 import { useI18n } from '@/components/I18nProvider'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { createClient } from '@/lib/supabase/client'
+
+const authConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 /* ─── Left-panel globe ──────────────────────────────────────────── */
 function LoginGlobe() {
@@ -89,37 +93,106 @@ export default function LoginPage() {
   const router = useRouter()
   const { t } = useI18n()
 
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [org, setOrg] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
+  const [signupSent, setSignupSent] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<{email?: string; password?: string}>({})
+  const [errors, setErrors] = useState<{email?: string; password?: string; name?: string}>({})
   const passwordRef = useRef<HTMLInputElement>(null)
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const validateFields = () => {
-    const newErrors: {email?: string; password?: string} = {}
+    const newErrors: {email?: string; password?: string; name?: string} = {}
     if (!emailRegex.test(email)) {
       newErrors.email = 'Please enter a valid email address'
     }
-    if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+    if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    }
+    if (mode === 'signup' && name.trim().length < 2) {
+      newErrors.name = 'Please enter your name'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!validateFields()) return
+    if (!authConfigured) {
+      showToast('Auth not configured — add Supabase keys to Vercel env vars', 'error')
+      return
+    }
     setLoading(true)
-    setTimeout(() => router.push('/dashboard'), 600)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        showToast(error.message, 'error')
+        setLoading(false)
+        return
+      }
+      router.push('/dashboard')
+      router.refresh()
+    } catch {
+      showToast('Sign-in failed. Please try again.', 'error')
+      setLoading(false)
+    }
   }
 
-  const handleForgot = () => {
-    if (!emailRegex.test(email)) return
-    setForgotSent(true)
-    setTimeout(() => setForgotSent(false), 3000)
+  const handleSignUp = async () => {
+    if (!validateFields()) return
+    if (!authConfigured) {
+      showToast('Auth not configured — add Supabase keys to Vercel env vars', 'error')
+      return
+    }
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name: name.trim(), org: org.trim() || null },
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
+        },
+      })
+      if (error) {
+        showToast(error.message, 'error')
+        setLoading(false)
+        return
+      }
+      setSignupSent(true)
+      setLoading(false)
+    } catch {
+      showToast('Sign-up failed. Please try again.', 'error')
+      setLoading(false)
+    }
+  }
+
+  const handleForgot = async () => {
+    if (!emailRegex.test(email)) {
+      setErrors(prev => ({ ...prev, email: 'Enter your email first' }))
+      return
+    }
+    if (!authConfigured) {
+      showToast('Auth not configured — add Supabase keys to Vercel env vars', 'error')
+      return
+    }
+    try {
+      const supabase = createClient()
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
+      })
+      setForgotSent(true)
+      setTimeout(() => setForgotSent(false), 4000)
+    } catch {
+      showToast('Could not send reset email', 'error')
+    }
   }
 
   return (
@@ -243,11 +316,51 @@ export default function LoginPage() {
             fontSize: 36,
             fontWeight: 400,
             color: 'var(--ink)',
-            margin: '0 0 36px',
+            margin: '0 0 8px',
             lineHeight: 1.05,
           }}>
-            {t('login_welcome')}
+            {mode === 'signin' ? t('login_welcome') : 'Create your account'}
           </h2>
+          <p style={{ margin: '0 0 28px', fontSize: 14, color: 'var(--ink-4)' }}>
+            {mode === 'signin'
+              ? 'Sign in to your GraffCloud workspace.'
+              : 'Pilot access for property owners and board members.'}
+          </p>
+
+          {!authConfigured && (
+            <div style={{
+              padding: '12px 14px',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              borderRadius: 'var(--r-md)',
+              fontSize: 12,
+              color: '#991b1b',
+              marginBottom: 20,
+              lineHeight: 1.5,
+            }}>
+              Authentication is not yet configured for this deployment. Add{' '}
+              <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>NEXT_PUBLIC_SUPABASE_URL</code>{' '}
+              and{' '}
+              <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{' '}
+              in your Vercel project settings to enable login and signup.
+            </div>
+          )}
+
+          {signupSent && (
+            <div style={{
+              padding: '14px 16px',
+              background: 'rgba(34,197,94,0.08)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              borderRadius: 'var(--r-md)',
+              fontSize: 13,
+              color: '#15803d',
+              marginBottom: 20,
+              lineHeight: 1.5,
+            }}>
+              <strong>Check your email.</strong> We sent a confirmation link to{' '}
+              <strong>{email}</strong>. Click it to activate your account.
+            </div>
+          )}
 
           {/* SSO buttons */}
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10, marginBottom: 24 }}>
@@ -317,6 +430,55 @@ export default function LoginPage() {
 
           {/* Email + password */}
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12, marginBottom: 16 }}>
+            {mode === 'signup' && (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+                  <input
+                    type="text"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: undefined })) }}
+                    autoComplete="name"
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: 'var(--r-md)',
+                      border: `1px solid ${errors.name ? '#ef4444' : 'var(--line-2)'}`,
+                      background: 'var(--surface)',
+                      fontSize: 14,
+                      color: 'var(--ink)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      transition: 'border-color .15s',
+                    }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = errors.name ? '#ef4444' : 'var(--ink)' }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = errors.name ? '#ef4444' : 'var(--line-2)' }}
+                  />
+                  {errors.name && (
+                    <span style={{ fontSize: 12, color: '#ef4444' }}>{errors.name}</span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Organisation (e.g. Obos Eiendom) — optional"
+                  value={org}
+                  onChange={(e) => setOrg(e.target.value)}
+                  autoComplete="organization"
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: 'var(--r-md)',
+                    border: '1px solid var(--line-2)',
+                    background: 'var(--surface)',
+                    fontSize: 14,
+                    color: 'var(--ink)',
+                    fontFamily: 'var(--font-sans)',
+                    outline: 'none',
+                    transition: 'border-color .15s',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)' }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--line-2)' }}
+                />
+              </>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
               <input
                 type="email"
@@ -349,7 +511,7 @@ export default function LoginPage() {
                 placeholder={t('login_password_placeholder')}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: undefined })) }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+                onKeyDown={(e) => e.key === 'Enter' && (mode === 'signin' ? handleSignIn() : handleSignUp())}
                 style={{
                   padding: '14px 16px',
                   borderRadius: 'var(--r-md)',
@@ -371,8 +533,8 @@ export default function LoginPage() {
           </div>
 
           {/* Forgot password */}
-          <div style={{ textAlign: 'right' as const, marginBottom: 20 }}>
-            {forgotSent ? (
+          <div style={{ textAlign: 'right' as const, marginBottom: 20, minHeight: 18 }}>
+            {mode === 'signup' ? null : forgotSent ? (
               <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 500 }}>
                 Reset link sent to {email}
               </span>
@@ -407,9 +569,9 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Sign in button */}
+          {/* Sign in / Sign up button */}
           <button
-            onClick={handleSignIn}
+            onClick={mode === 'signin' ? handleSignIn : handleSignUp}
             disabled={loading}
             style={{
               padding: '14px 24px',
@@ -442,7 +604,9 @@ export default function LoginPage() {
               el.style.boxShadow = 'none'
             }}
           >
-            {loading ? t('login_signing_in') : t('login_submit')}
+            {loading
+              ? (mode === 'signin' ? t('login_signing_in') : 'Creating account…')
+              : (mode === 'signin' ? t('login_submit') : 'Create account')}
           </button>
 
           {/* BankID button */}
@@ -480,17 +644,53 @@ export default function LoginPage() {
             {t('login_bankid')}
           </button>
 
-          {/* Signup link */}
+          {/* Mode toggle */}
           <div style={{ textAlign: 'center' as const, fontSize: 13.5, color: 'var(--ink-3)', marginBottom: 24 }}>
-            {t('login_no_account')}{' '}
-            <Link href="/landing#pricing" style={{
-              color: 'var(--ink)',
-              fontWeight: 500,
-              textDecoration: 'underline',
-              textDecorationColor: 'var(--line-2)',
-            }}>
-              {t('login_request')} →
-            </Link>
+            {mode === 'signin' ? (
+              <>
+                {t('login_no_account')}{' '}
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setErrors({}); setSignupSent(false) }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--ink)',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13.5,
+                    textDecoration: 'underline',
+                    textDecorationColor: 'var(--line-2)',
+                  }}
+                >
+                  Create account →
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setMode('signin'); setErrors({}); setSignupSent(false) }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--ink)',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13.5,
+                    textDecoration: 'underline',
+                    textDecorationColor: 'var(--line-2)',
+                  }}
+                >
+                  Sign in →
+                </button>
+              </>
+            )}
           </div>
 
           {/* Security badge */}

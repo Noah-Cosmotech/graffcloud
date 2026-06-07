@@ -454,8 +454,14 @@ export default function IntelligencePage() {
           ← {t('back')}
         </Link>
         <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.08em', color: 'var(--amber)', flex: 1 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.08em', color: 'var(--amber)', flex: 1, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           K4Z3 — OSLO → BARCELONA
+          <span title="Sample data — your real trails populate once your portfolio has sealed incidents" style={{
+            fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.12em',
+            color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            padding: '3px 7px', borderRadius: 4, textTransform: 'uppercase',
+          }}>Pilot preview</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <LangToggle />

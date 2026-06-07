@@ -1,12 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { GCLogo } from '@/components/GCLogo'
 import { LangToggle } from '@/components/LangToggle'
 import { useI18n } from '@/components/I18nProvider'
 import { Drawer } from '@/components/Drawer'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { createClient } from '@/lib/supabase/client'
+
+const authConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
+type Profile = {
+  name: string
+  email: string
+  org: string | null
+  initials: string
+}
+
+function getInitials(name: string, email: string) {
+  const source = (name || email || '?').trim()
+  const parts = source.split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return source.slice(0, 2).toUpperCase()
+}
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -431,7 +450,32 @@ export default function DashboardPage() {
   const { t } = useI18n()
   const [drawer, setDrawer] = useState<DrawerContent | null>(null)
   const [alertsRead, setAlertsRead] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const activeNav = 0 // Portfolio
+
+  useEffect(() => {
+    if (!authConfigured) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || cancelled) return
+        const meta = (user.user_metadata ?? {}) as { name?: string; org?: string }
+        const email = user.email ?? ''
+        const name = meta.name?.trim() || email.split('@')[0] || 'You'
+        setProfile({
+          name,
+          email,
+          org: meta.org?.trim() || null,
+          initials: getInitials(meta.name ?? '', email),
+        })
+      } catch {
+        /* ignore — display falls back to email-less placeholder */
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   function closeDrawer() { setDrawer(null) }
 
@@ -531,12 +575,38 @@ export default function DashboardPage() {
               color: '#fff',
               flexShrink: 0,
             }}>
-              ML
+              {profile?.initials ?? '··'}
             </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Marte Løken · Pro</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>NOK 5,900/mnd · Obos Eiendom</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {profile?.name ?? (authConfigured ? 'Loading…' : 'Pilot user')}
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {profile?.org ?? profile?.email ?? 'Sign in to load profile'}
+              </div>
             </div>
+            {profile && (
+              <form action="/api/auth/signout" method="POST" style={{ margin: 0 }}>
+                <button
+                  type="submit"
+                  aria-label="Sign out"
+                  title="Sign out"
+                  style={{
+                    background: 'transparent',
+                    border: 0,
+                    padding: 6,
+                    cursor: 'pointer',
+                    color: 'rgba(255,255,255,0.45)',
+                    borderRadius: 6,
+                    display: 'flex',
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M10 11.5l3.5-3.5L10 4.5M13 8H6M6 2H3.5A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </aside>
@@ -571,7 +641,7 @@ export default function DashboardPage() {
         }}>
           <div style={{ flex: 1 }}>
             <h1 style={{ margin: 0, fontSize: 20, fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
-              {getGreeting()}, Marte
+              {getGreeting()}{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
             </h1>
             <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--ink-4)' }}>{t('dash_sub')}</p>
           </div>
