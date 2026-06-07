@@ -38,7 +38,7 @@ const NAV_ITEMS = [
   { key: 'dash_settings' as const, icon: IconSettings, badge: 0, href: '/dashboard' },
 ]
 
-const INCIDENTS = [
+const DEMO_INCIDENTS = [
   { id: 'INC-04182', address: 'Thorvald Meyers gate 42', tag: 'K4Z3', cost: 'NOK 18,400', status: 'MATCHED', match: 94, lat: 59.923, lng: 10.757 },
   { id: 'INC-04177', address: 'Markveien 18', tag: null, cost: 'NOK 4,200', status: 'NEW', match: null, lat: 59.921, lng: 10.754 },
   { id: 'INC-04169', address: 'Storgata 36', tag: 'K4Z3', cost: 'NOK 9,800', status: 'OPEN', match: 71, lat: 59.913, lng: 10.748 },
@@ -48,7 +48,7 @@ const INCIDENTS = [
   { id: 'INC-04101', address: 'Møllergata 6', tag: 'SVG-04', cost: 'NOK 6,700', status: 'CLOSED', match: 81, lat: 59.915, lng: 10.749 },
 ]
 
-const PROPERTIES = [
+const DEMO_PROPERTIES = [
   { name: 'Thorvald Meyers gate 42', readiness: 91, cost: 'NOK 184k', color: 'red' },
   { name: 'Storgata 36', readiness: 74, cost: 'NOK 92k', color: 'amber' },
   { name: 'Markveien 18', readiness: 68, cost: 'NOK 68k', color: 'amber' },
@@ -56,13 +56,13 @@ const PROPERTIES = [
   { name: 'Pilestredet 75', readiness: 32, cost: 'NOK 28k', color: 'green' },
 ]
 
-const ALERTS = [
+const DEMO_ALERTS = [
   { level: 'CRITICAL', color: '#EF4444', dot: '#EF4444', text: 'K4Z3 confirmed match — Thorvald Meyers gate 42' },
   { level: 'WARNING', color: '#F59E0B', dot: '#F59E0B', text: 'Readiness below threshold: Pilestredet 75 (32%)' },
   { level: 'INFO', color: '#3B82F6', dot: '#3B82F6', text: 'New bounty posted: BRG-09 — NOK 10,000' },
 ]
 
-const BOUNTIES = [
+const DEMO_BOUNTIES = [
   { id: 'BNT-0041', sig: 'K4Z3', reward: 'NOK 15,000', incidents: 9, zone: 'Grünerløkka / Torshov', posted: '12 May 2026', status: 'ACTIVE' },
   { id: 'BNT-0038', sig: 'BRG-09', reward: 'NOK 10,000', incidents: 5, zone: 'Sentrum / Gamlebyen', posted: '8 May 2026', status: 'ACTIVE' },
   { id: 'BNT-0029', sig: 'SVG-04', reward: 'NOK 6,500', incidents: 3, zone: 'Majorstuen / Frogner', posted: '1 May 2026', status: 'ACTIVE' },
@@ -89,9 +89,9 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-function exportIncidentsCsv() {
+function exportIncidentsCsv(incidents: typeof DEMO_INCIDENTS) {
   const header = 'ID,Property,Date,Signature,Status,Cost(NOK)'
-  const rows = INCIDENTS.map(inc => {
+  const rows = incidents.map(inc => {
     const costNok = inc.cost.replace('NOK ', '').replace(/,/g, '')
     const date = new Date().toLocaleDateString('no-NO')
     const sig = inc.tag ?? ''
@@ -109,7 +109,7 @@ function exportIncidentsCsv() {
   URL.revokeObjectURL(url)
 }
 
-function openPoliceReferral(inc: typeof INCIDENTS[0]) {
+function openPoliceReferral(inc: typeof DEMO_INCIDENTS[0]) {
   const w = window.open('', '_blank', 'width=820,height=700')
   if (!w) return
   const now = new Date()
@@ -317,7 +317,7 @@ function IconExport() {
 
 // ─── Drawer content components ────────────────────────────────────────────────
 
-function IncidentDrawerContent({ inc }: { inc: typeof INCIDENTS[0] }) {
+function IncidentDrawerContent({ inc }: { inc: typeof DEMO_INCIDENTS[0] }) {
   const sc = statusColor(inc.status)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -343,7 +343,7 @@ function IncidentDrawerContent({ inc }: { inc: typeof INCIDENTS[0] }) {
   )
 }
 
-function PropertyDrawerContent({ prop }: { prop: typeof PROPERTIES[0] }) {
+function PropertyDrawerContent({ prop }: { prop: typeof DEMO_PROPERTIES[0] }) {
   const barColor = readinessColor(prop.color)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -371,7 +371,7 @@ function PropertyDrawerContent({ prop }: { prop: typeof PROPERTIES[0] }) {
   )
 }
 
-function BountyDrawerContent({ bounty }: { bounty: typeof BOUNTIES[0] }) {
+function BountyDrawerContent({ bounty }: { bounty: typeof DEMO_BOUNTIES[0] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -405,10 +405,18 @@ function DrawerField({ label, value, mono, children }: { label: string; value?: 
 
 // ─── Oslo Heatmap SVG ─────────────────────────────────────────────────────────
 
-function OsloHeatmap() {
+function OsloHeatmap({ dots }: { dots: typeof HEATMAP_DOTS }) {
   return (
-    <div style={{ background: '#111', borderRadius: 'var(--r-lg)', padding: 20, height: 260 }}>
+    <div style={{ background: '#111', borderRadius: 'var(--r-lg)', padding: 20, height: 260, position: 'relative' }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Oslo — incident heatmap</div>
+      {dots.length === 0 && (
+        <div style={{
+          position: 'absolute', inset: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'rgba(255,255,255,0.35)', fontSize: 12, textAlign: 'center', padding: '0 20px',
+        }}>
+          Heatmap appears once you've reported incidents.
+        </div>
+      )}
       <svg viewBox="0 0 100 80" width="100%" height="100%" style={{ display: 'block' }}>
         {/* Street grid */}
         {[15, 30, 45, 60, 75].map(y => (
@@ -426,7 +434,7 @@ function OsloHeatmap() {
         {/* Fjord */}
         <path d="M20 75 Q50 68 80 75" stroke="rgba(100,150,255,0.12)" strokeWidth="3" fill="none" />
         {/* Incident dots */}
-        {HEATMAP_DOTS.map((dot, i) => (
+        {dots.map((dot, i) => (
           <g key={i}>
             <circle cx={dot.x} cy={dot.y} r="3.5" fill={dotColor(dot.status)} opacity="0.25" />
             <circle cx={dot.x} cy={dot.y} r="2" fill={dotColor(dot.status)} opacity="0.85" />
@@ -442,15 +450,16 @@ function OsloHeatmap() {
 // ─── Main dashboard ───────────────────────────────────────────────────────────
 
 type DrawerContent =
-  | { type: 'incident'; data: typeof INCIDENTS[0] }
-  | { type: 'property'; data: typeof PROPERTIES[0] }
-  | { type: 'bounty'; data: typeof BOUNTIES[0] }
+  | { type: 'incident'; data: typeof DEMO_INCIDENTS[0] }
+  | { type: 'property'; data: typeof DEMO_PROPERTIES[0] }
+  | { type: 'bounty'; data: typeof DEMO_BOUNTIES[0] }
 
 export default function DashboardPage() {
   const { t } = useI18n()
   const [drawer, setDrawer] = useState<DrawerContent | null>(null)
   const [alertsRead, setAlertsRead] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [showDemo, setShowDemo] = useState(false)
   const activeNav = 0 // Portfolio
 
   useEffect(() => {
@@ -477,15 +486,34 @@ export default function DashboardPage() {
     return () => { cancelled = true }
   }, [])
 
+  useEffect(() => {
+    const stored = localStorage.getItem('gc_show_demo')
+    if (stored === '1') setShowDemo(true)
+  }, [])
+
+  function toggleDemo() {
+    setShowDemo(prev => {
+      const next = !prev
+      localStorage.setItem('gc_show_demo', next ? '1' : '0')
+      return next
+    })
+  }
+
+  const incidents = showDemo ? DEMO_INCIDENTS : []
+  const properties = showDemo ? DEMO_PROPERTIES : []
+  const alerts = showDemo ? DEMO_ALERTS : []
+  const bounties = showDemo ? DEMO_BOUNTIES : []
+  const heatmapDots = showDemo ? HEATMAP_DOTS : []
+
   function closeDrawer() { setDrawer(null) }
 
-  function openIncident(inc: typeof INCIDENTS[0]) {
+  function openIncident(inc: typeof DEMO_INCIDENTS[0]) {
     setDrawer({ type: 'incident', data: inc })
   }
-  function openProperty(prop: typeof PROPERTIES[0]) {
+  function openProperty(prop: typeof DEMO_PROPERTIES[0]) {
     setDrawer({ type: 'property', data: prop })
   }
-  function openBounty(bounty: typeof BOUNTIES[0]) {
+  function openBounty(bounty: typeof DEMO_BOUNTIES[0]) {
     setDrawer({ type: 'bounty', data: bounty })
   }
 
@@ -517,6 +545,7 @@ export default function DashboardPage() {
           {NAV_ITEMS.map((item, i) => {
             const Icon = item.icon
             const isActive = i === activeNav
+            const badge = showDemo ? item.badge : 0
             return (
               <Link
                 key={item.key}
@@ -541,7 +570,7 @@ export default function DashboardPage() {
                   <Icon />
                 </span>
                 <span style={{ flex: 1 }}>{t(item.key)}</span>
-                {item.badge > 0 && (
+                {badge > 0 && (
                   <span style={{
                     background: i === 0 ? 'var(--red)' : 'rgba(255,255,255,0.12)',
                     color: '#fff',
@@ -551,7 +580,7 @@ export default function DashboardPage() {
                     borderRadius: 999,
                     lineHeight: 1.4,
                   }}>
-                    {item.badge}
+                    {badge}
                   </span>
                 )}
               </Link>
@@ -646,13 +675,31 @@ export default function DashboardPage() {
             <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--ink-4)' }}>{t('dash_sub')}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              onClick={toggleDemo}
+              title={showDemo ? 'Hide sample portfolio' : 'Show sample portfolio'}
+              style={{
+                fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.06em',
+                textTransform: 'uppercase', padding: '6px 10px',
+                borderRadius: 999,
+                border: '1px solid var(--line-2)',
+                background: showDemo ? 'var(--amber-wash)' : 'transparent',
+                color: showDemo ? 'var(--amber-ink)' : 'var(--ink-4)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: showDemo ? 'var(--amber-ink)' : 'var(--ink-5)' }} />
+              {showDemo ? 'Demo on' : 'Demo off'}
+            </button>
             <LangToggle />
             <button
-              onClick={() => showToast('You have 14 new incidents and 3 unread alerts')}
+              onClick={() => showToast(showDemo ? 'You have 14 new incidents and 3 unread alerts' : 'No new notifications')}
               style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--ink-3)', padding: 8, borderRadius: 10, display: 'flex', alignItems: 'center' }}
               aria-label="Notifications"
             >
-              <IconBell badge={14} />
+              <IconBell badge={showDemo ? 14 : 0} />
             </button>
             <Link href="/upload" className="btn btn-primary" style={{ fontSize: 13, padding: '9px 18px', textDecoration: 'none' }}>
               + {t('new_incident')}
@@ -664,24 +711,32 @@ export default function DashboardPage() {
 
           {/* ── KPI CARDS ── */}
           <div className="r-grid-4" style={{ gap: 14 }}>
-            {[
-              {
-                value: 'NOK 1.24M', label: t('dash_cost_ytd'),
-                onClick: () => showToast('YTD breakdown: Thorvald Meyers 38% · Storgata 22% · Other 40%'),
-              },
-              {
-                value: '147', label: t('dash_incidents_30'),
-                onClick: () => showToast('147 incidents: 61 matched, 42 open, 28 new, 16 closed'),
-              },
-              {
-                value: '74%', label: t('dash_readiness'),
-                onClick: () => showToast('Portfolio readiness: 2 properties below 50% threshold'),
-              },
-              {
-                value: '41', label: t('dash_open_bounties'),
-                onClick: () => showToast('41 open bounties · NOK 312,500 total reward pool'),
-              },
-            ].map((kpi, i) => (
+            {(showDemo
+              ? [
+                  {
+                    value: 'NOK 1.24M', label: t('dash_cost_ytd'),
+                    onClick: () => showToast('YTD breakdown: Thorvald Meyers 38% · Storgata 22% · Other 40%'),
+                  },
+                  {
+                    value: '147', label: t('dash_incidents_30'),
+                    onClick: () => showToast('147 incidents: 61 matched, 42 open, 28 new, 16 closed'),
+                  },
+                  {
+                    value: '74%', label: t('dash_readiness'),
+                    onClick: () => showToast('Portfolio readiness: 2 properties below 50% threshold'),
+                  },
+                  {
+                    value: '41', label: t('dash_open_bounties'),
+                    onClick: () => showToast('41 open bounties · NOK 312,500 total reward pool'),
+                  },
+                ]
+              : [
+                  { value: 'NOK 0', label: t('dash_cost_ytd'), onClick: () => showToast('No incidents reported yet') },
+                  { value: '0', label: t('dash_incidents_30'), onClick: () => showToast('No incidents reported yet') },
+                  { value: '—', label: t('dash_readiness'), onClick: () => showToast('Add a property to track readiness') },
+                  { value: '0', label: t('dash_open_bounties'), onClick: () => showToast('No bounties posted yet') },
+                ]
+            ).map((kpi, i) => (
               <button
                 key={i}
                 onClick={kpi.onClick}
@@ -709,7 +764,8 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid var(--line)' }}>
               <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{t('dash_recent')}</h2>
               <button
-                onClick={exportIncidentsCsv}
+                onClick={() => exportIncidentsCsv(incidents)}
+                disabled={incidents.length === 0}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, border: '1px solid var(--line-2)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--ink-3)' }}
               >
                 <IconExport /> Export
@@ -725,7 +781,15 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {INCIDENTS.map((inc, i) => {
+                {incidents.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '40px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
+                      No incidents reported yet.{' '}
+                      <Link href="/upload" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>Upload your first photo →</Link>
+                    </td>
+                  </tr>
+                )}
+                {incidents.map((inc, i) => {
                   const sc = statusColor(inc.status)
                   return (
                     <tr
@@ -733,7 +797,7 @@ export default function DashboardPage() {
                       onClick={() => openIncident(inc)}
                       style={{
                         cursor: 'pointer',
-                        borderBottom: i < INCIDENTS.length - 1 ? '1px solid var(--line)' : 'none',
+                        borderBottom: i < incidents.length - 1 ? '1px solid var(--line)' : 'none',
                         transition: 'background .1s',
                       }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg)' }}
@@ -764,7 +828,7 @@ export default function DashboardPage() {
           <div className="r-grid-2" style={{ gap: 14 }}>
 
             {/* Oslo Heatmap */}
-            <OsloHeatmap />
+            <OsloHeatmap dots={heatmapDots} />
 
             {/* Properties */}
             <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)', overflow: 'hidden' }}>
@@ -772,7 +836,15 @@ export default function DashboardPage() {
                 <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{t('dash_properties')}</h2>
               </div>
               <div style={{ padding: '8px 0' }}>
-                {PROPERTIES.map((prop, i) => {
+                {properties.length === 0 && (
+                  <div style={{ padding: '32px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
+                    No properties added yet.
+                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ink-5)' }}>
+                      Properties appear here once you upload incidents tied to an address.
+                    </div>
+                  </div>
+                )}
+                {properties.map((prop, i) => {
                   const barColor = readinessColor(prop.color)
                   return (
                     <div
@@ -785,7 +857,7 @@ export default function DashboardPage() {
                         padding: '12px 22px',
                         cursor: 'pointer',
                         transition: 'background .1s',
-                        borderBottom: i < PROPERTIES.length - 1 ? '1px solid var(--line)' : 'none',
+                        borderBottom: i < properties.length - 1 ? '1px solid var(--line)' : 'none',
                       }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg)' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '' }}
@@ -822,7 +894,12 @@ export default function DashboardPage() {
                 </button>
               </div>
               <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {ALERTS.map((alert, i) => (
+                {alerts.length === 0 && (
+                  <div style={{ padding: '24px 14px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
+                    No active alerts.
+                  </div>
+                )}
+                {alerts.map((alert, i) => (
                   <div
                     key={i}
                     style={{
@@ -853,7 +930,13 @@ export default function DashboardPage() {
                 <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Open Bounties</h2>
               </div>
               <div style={{ padding: '8px 0' }}>
-                {BOUNTIES.map((bounty, i) => (
+                {bounties.length === 0 && (
+                  <div style={{ padding: '32px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
+                    No open bounties.{' '}
+                    <Link href="/bounty" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>Post one →</Link>
+                  </div>
+                )}
+                {bounties.map((bounty, i) => (
                   <div
                     key={bounty.id}
                     onClick={() => openBounty(bounty)}
@@ -864,7 +947,7 @@ export default function DashboardPage() {
                       padding: '14px 22px',
                       cursor: 'pointer',
                       transition: 'background .1s',
-                      borderBottom: i < BOUNTIES.length - 1 ? '1px solid var(--line)' : 'none',
+                      borderBottom: i < bounties.length - 1 ? '1px solid var(--line)' : 'none',
                     }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg)' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '' }}
@@ -917,7 +1000,7 @@ export default function DashboardPage() {
               <button
                 className="btn btn-primary"
                 style={{ fontSize: 13, padding: '9px 18px' }}
-                onClick={() => { openPoliceReferral(drawer!.data as typeof INCIDENTS[0]); closeDrawer() }}
+                onClick={() => { openPoliceReferral(drawer!.data as typeof DEMO_INCIDENTS[0]); closeDrawer() }}
               >
                 Refer to police
               </button>
