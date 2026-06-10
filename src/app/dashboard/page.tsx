@@ -175,7 +175,7 @@ function openPoliceReferral(inc: DisplayIncident) {
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Georgia', serif; background: #fff; color: #111; padding: 56px 64px; max-width: 760px; margin: 0 auto; }
       .letterhead { display: flex; align-items: center; gap: 18px; padding-bottom: 24px; border-bottom: 3px solid #111; margin-bottom: 32px; }
-      .logo-mark { width: 42px; height: 42px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FFA500; font-size: 22px; font-weight: 900; font-family: monospace; flex-shrink: 0; }
+      .logo-mark { width: 42px; height: 42px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #E5485C; font-size: 22px; font-weight: 900; font-family: monospace; flex-shrink: 0; }
       .org { font-family: monospace; }
       .org-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
       .org-sub { font-size: 12px; color: #666; margin-top: 2px; }
@@ -690,7 +690,7 @@ export default function DashboardPage() {
         {/* Logo */}
         <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <GCLogo size={28} color="var(--amber)" />
+            <GCLogo size={28} color="var(--brand-bright)" />
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: '#fff', letterSpacing: '-0.01em' }}>GraffCloud</span>
           </div>
         </div>
@@ -750,7 +750,7 @@ export default function DashboardPage() {
               width: 32,
               height: 32,
               borderRadius: '50%',
-              background: 'var(--amber)',
+              background: 'var(--brand-bright)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

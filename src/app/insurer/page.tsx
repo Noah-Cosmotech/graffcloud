@@ -229,7 +229,7 @@ export default function InsurerPage() {
               </div>
               <div style={{ display: 'flex', gap: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-                  <div style={{ width: 24, height: 2, background: 'var(--amber)', borderRadius: 2 }} />
+                  <div style={{ width: 24, height: 2, background: 'var(--brand)', borderRadius: 2 }} />
                   Oslo
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
@@ -259,11 +259,11 @@ export default function InsurerPage() {
 
               {/* Lines */}
               <path d={bergenPath} fill="none" stroke="var(--blue)" strokeWidth={2} strokeLinejoin="round" />
-              <path d={osloPath} fill="none" stroke="var(--amber)" strokeWidth={2.5} strokeLinejoin="round" />
+              <path d={osloPath} fill="none" stroke="var(--brand)" strokeWidth={2.5} strokeLinejoin="round" />
 
               {/* Dots */}
               {OSLO_DATA.map((v, i) => (
-                <circle key={i} cx={px(i)} cy={py(v)} r={3.5} fill="var(--amber)" />
+                <circle key={i} cx={px(i)} cy={py(v)} r={3.5} fill="var(--brand)" />
               ))}
               {BERGEN_DATA.map((v, i) => (
                 <circle key={i} cx={px(i)} cy={py(v)} r={3} fill="var(--blue)" />
@@ -302,7 +302,7 @@ export default function InsurerPage() {
                       style={{
                         height: 20,
                         borderRadius: 4,
-                        background: `rgba(245,158,11,${val})`,
+                        background: `rgba(148,0,20,${val})`,
                         border: '1px solid rgba(255,255,255,0.04)',
                       }}
                     />
@@ -315,7 +315,7 @@ export default function InsurerPage() {
             <div style={{ display: 'flex', gap: 10, marginTop: 14, alignItems: 'center' }}>
               <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>LOW</span>
               {[0.1, 0.3, 0.6, 1.0].map(v => (
-                <div key={v} style={{ width: 16, height: 10, borderRadius: 3, background: `rgba(245,158,11,${v})` }} />
+                <div key={v} style={{ width: 16, height: 10, borderRadius: 3, background: `rgba(148,0,20,${v})` }} />
               ))}
               <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>CRITICAL</span>
             </div>
@@ -546,7 +546,7 @@ export default function InsurerPage() {
                   max={100}
                   value={riskThreshold}
                   onChange={e => setRiskThreshold(Number(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--amber)' }}
+                  style={{ width: '100%', accentColor: 'var(--brand)' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: 'var(--ink-5)', fontFamily: 'var(--font-mono)' }}>
                   <span>0 (all)</span><span>50 (moderate+)</span><span>100 (critical only)</span>

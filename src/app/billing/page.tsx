@@ -237,10 +237,10 @@ export default function BillingPage() {
               position: 'relative',
               border: '1px solid rgba(255,255,255,0.08)',
             }}>
-              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--amber)', color: '#0A0A0A', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', padding: '4px 14px', borderRadius: 'var(--r-pill)' }}>
+              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--brand)', color: '#fff', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', padding: '4px 14px', borderRadius: 'var(--r-pill)' }}>
                 {t('billing_popular')}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', color: 'var(--amber)', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', color: 'var(--brand)', marginBottom: 20 }}>
                 PROFESSIONAL
               </div>
               <div style={{ marginBottom: 8 }}>
@@ -266,7 +266,7 @@ export default function BillingPage() {
                   'Success manager',
                 ].map(f => (
                   <li key={f} style={{ display: 'flex', gap: 10, fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>
-                    <span style={{ color: 'var(--amber)', flexShrink: 0, marginTop: 1 }}>✓</span>
+                    <span style={{ color: 'var(--brand)', flexShrink: 0, marginTop: 1 }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -282,14 +282,14 @@ export default function BillingPage() {
                   fontWeight: 600,
                   padding: '13px 20px',
                   borderRadius: 'var(--r-pill)',
-                  background: 'var(--amber)',
-                  color: '#0A0A0A',
+                  background: 'var(--brand)',
+                  color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
                   transition: 'transform .15s, box-shadow .15s',
                 }}
                 onClick={() => handleCheckout('pro')}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(245,158,11,0.4)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(148,0,20,0.35)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '' }}
               >
                 {t('pricing_cta_start')}

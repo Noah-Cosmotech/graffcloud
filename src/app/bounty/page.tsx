@@ -132,7 +132,7 @@ export default function BountyPage() {
               { value: '18', label: 'Paid in 2026' },
             ].map(stat => (
               <div key={stat.label}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 40, color: 'var(--amber)', lineHeight: 1 }}>{stat.value}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 40, color: 'var(--brand-bright)', lineHeight: 1 }}>{stat.value}</div>
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>{stat.label}</div>
               </div>
             ))}
@@ -197,14 +197,14 @@ export default function BountyPage() {
         {tipTarget && (
           <div>
             {/* Bounty summary */}
-            <div style={{ padding: '14px 16px', background: 'rgba(255,140,0,0.07)', border: '1px solid rgba(255,140,0,0.2)', borderRadius: 12, marginBottom: 24 }}>
+            <div style={{ padding: '14px 16px', background: 'rgba(148,0,20,0.05)', border: '1px solid rgba(148,0,20,0.18)', borderRadius: 12, marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 18, color: 'var(--amber)' }}>{tipTarget.code}</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 18, color: 'var(--brand)' }}>{tipTarget.code}</div>
                   <div style={{ fontSize: 13, color: 'var(--ink-4)', marginTop: 4 }}>{tipTarget.location}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--amber)' }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--brand)' }}>
                     NOK {tipTarget.reward.toLocaleString('nb-NO')}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--ink-4)' }}>reward</div>
@@ -236,7 +236,7 @@ export default function BountyPage() {
                 </div>
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, cursor: 'pointer' }}>
-                <input type="checkbox" checked={bankId} onChange={e => setBankId(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--amber)' }} />
+                <input type="checkbox" checked={bankId} onChange={e => setBankId(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--brand)' }} />
                 <span style={{ fontSize: 13, color: 'var(--ink-3)' }}>I understand the BankID verification process</span>
               </label>
             </div>
@@ -276,13 +276,13 @@ function BountyCardItem({ bounty: b, onSubmitTip }: { bounty: BountyCard; onSubm
 
         {/* Glyph preview */}
         <svg width={52} height={52} viewBox="0 0 60 50" style={{ background: 'rgba(10,10,10,0.04)', borderRadius: 10, flexShrink: 0 }}>
-          <path d={b.glyph} fill="none" stroke={b.closed ? '#aaa' : '#FF8C00'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={b.glyph} fill="none" stroke={b.closed ? '#aaa' : 'var(--brand)'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
 
       {/* Reward */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: b.closed ? 'var(--ink-4)' : 'var(--amber)', lineHeight: 1 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: b.closed ? 'var(--ink-4)' : 'var(--brand)', lineHeight: 1 }}>
           NOK {b.reward.toLocaleString('nb-NO')}
           {b.paid && <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--green)', marginLeft: 8 }}>PAID</span>}
         </div>

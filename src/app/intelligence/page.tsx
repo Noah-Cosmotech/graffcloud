@@ -79,8 +79,8 @@ function drawGlobe(
 
   // Atmosphere glow
   const atmGrad = ctx.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 1.18)
-  atmGrad.addColorStop(0, 'rgba(255,160,60,0.07)')
-  atmGrad.addColorStop(1, 'rgba(255,160,60,0)')
+  atmGrad.addColorStop(0, 'rgba(229,72,92,0.07)')
+  atmGrad.addColorStop(1, 'rgba(229,72,92,0)')
   ctx.beginPath()
   ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2)
   ctx.fillStyle = atmGrad
@@ -161,12 +161,12 @@ function drawGlobe(
       if (p0.rz < 0 && p1.rz < 0) continue
       const alpha = arcGlow * (p0.rz > 0 ? 0.9 : 0.2)
       const grad = ctx.createLinearGradient(p0.sx, p0.sy, p1.sx, p1.sy)
-      grad.addColorStop(0, colorWithAlpha('#FF8C00', alpha))
-      grad.addColorStop(1, colorWithAlpha('#FFA500', alpha))
+      grad.addColorStop(0, colorWithAlpha('#E5485C', alpha))
+      grad.addColorStop(1, colorWithAlpha('#F06A7C', alpha))
       ctx.beginPath()
       ctx.strokeStyle = grad
       ctx.lineWidth = 1.5
-      ctx.shadowColor = '#FF8C00'
+      ctx.shadowColor = '#E5485C'
       ctx.shadowBlur = arcGlow * 8
       ctx.moveTo(p0.sx, p0.sy)
       ctx.lineTo(p1.sx, p1.sy)
@@ -186,9 +186,9 @@ function drawGlobe(
       const rz = points[i0].rz
       if (rz > 0) {
         const pg = ctx.createRadialGradient(px, py, 0, px, py, 6)
-        pg.addColorStop(0, 'rgba(255,200,80,1)')
-        pg.addColorStop(0.5, 'rgba(255,140,0,0.6)')
-        pg.addColorStop(1, 'rgba(255,140,0,0)')
+        pg.addColorStop(0, 'rgba(255,205,212,1)')
+        pg.addColorStop(0.5, 'rgba(229,72,92,0.6)')
+        pg.addColorStop(1, 'rgba(229,72,92,0)')
         ctx.beginPath()
         ctx.arc(px, py, 6, 0, Math.PI * 2)
         ctx.fillStyle = pg
@@ -196,7 +196,7 @@ function drawGlobe(
         // Core dot
         ctx.beginPath()
         ctx.arc(px, py, 2.5, 0, Math.PI * 2)
-        ctx.fillStyle = '#FFFACD'
+        ctx.fillStyle = '#FFE9EC'
         ctx.fill()
       }
     }
@@ -226,9 +226,9 @@ function drawGlobe(
     if (isPrimary) {
       const ringR = 8 + pulse * 6
       const rg = ctx.createRadialGradient(proj.sx, proj.sy, 0, proj.sx, proj.sy, ringR)
-      rg.addColorStop(0, 'rgba(255,140,0,0.0)')
-      rg.addColorStop(0.6, colorWithAlpha('#FF8C00', 0.25 * pulse))
-      rg.addColorStop(1, 'rgba(255,140,0,0)')
+      rg.addColorStop(0, 'rgba(229,72,92,0.0)')
+      rg.addColorStop(0.6, colorWithAlpha('#E5485C', 0.25 * pulse))
+      rg.addColorStop(1, 'rgba(229,72,92,0)')
       ctx.beginPath()
       ctx.arc(proj.sx, proj.sy, ringR, 0, Math.PI * 2)
       ctx.fillStyle = rg
@@ -239,11 +239,11 @@ function drawGlobe(
     const dotR = isPrimary ? 5 : 3.5
     const dg = ctx.createRadialGradient(proj.sx, proj.sy, 0, proj.sx, proj.sy, dotR)
     dg.addColorStop(0, '#FFF5CC')
-    dg.addColorStop(1, isPrimary ? '#FF8C00' : '#AAAAAA')
+    dg.addColorStop(1, isPrimary ? '#E5485C' : '#AAAAAA')
     ctx.beginPath()
     ctx.arc(proj.sx, proj.sy, dotR, 0, Math.PI * 2)
     ctx.fillStyle = dg
-    ctx.shadowColor = isPrimary ? '#FF8C00' : 'transparent'
+    ctx.shadowColor = isPrimary ? '#E5485C' : 'transparent'
     ctx.shadowBlur = isPrimary ? 10 : 0
     ctx.fill()
     ctx.shadowBlur = 0
@@ -423,9 +423,9 @@ export default function IntelligencePage() {
     w.document.write(`
       <html><head><title>K4Z3 Dossier — GraffCloud</title><style>
         body { font-family: monospace; background: #0a0a0a; color: #eee; padding: 40px; }
-        h1 { color: #FFA500; } table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+        h1 { color: #F06A7C; } table { width: 100%; border-collapse: collapse; margin-top: 24px; }
         td, th { padding: 10px 14px; border-bottom: 1px solid #333; text-align: left; }
-        th { color: #FFA500; font-size: 11px; letter-spacing: 0.08em; }
+        th { color: #F06A7C; font-size: 11px; letter-spacing: 0.08em; }
       </style></head><body>
         <h1>K4Z3 — CLUSTER DOSSIER</h1>
         <p>Confidence: 92.4% | Incidents: 74 | Cities: 9 | Estimated damage: NOK 1.8M</p>
@@ -440,7 +440,8 @@ export default function IntelligencePage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--ink)', color: '#fff', overflow: 'hidden' }}>
+    // Dark page — remap the amber accent token to the bright brand red
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--ink)', color: '#fff', overflow: 'hidden', '--amber': 'var(--brand-bright)' } as React.CSSProperties}>
       <ToastContainer />
 
       {/* Top bar */}
@@ -472,7 +473,7 @@ export default function IntelligencePage() {
           {([1, 2, 5, 10] as const).map(s => (
             <button key={s} onClick={() => handleSpeedChange(s)} style={{
               ...iconBtn,
-              background: speed === s ? 'rgba(255,140,0,0.25)' : 'rgba(255,255,255,0.06)',
+              background: speed === s ? 'rgba(229,72,92,0.25)' : 'rgba(255,255,255,0.06)',
               color: speed === s ? 'var(--amber)' : 'rgba(255,255,255,0.6)',
               fontSize: 11, padding: '5px 10px',
             }}>{s}×</button>
@@ -480,7 +481,7 @@ export default function IntelligencePage() {
           <button onClick={handleFullscreen} style={iconBtn} title="Fullscreen">⛶</button>
           <button onClick={() => setShowTweaks(prev => !prev)} style={{
             ...iconBtn,
-            background: showTweaks ? 'rgba(255,140,0,0.2)' : 'rgba(255,255,255,0.06)',
+            background: showTweaks ? 'rgba(229,72,92,0.2)' : 'rgba(255,255,255,0.06)',
             color: showTweaks ? 'var(--amber)' : 'rgba(255,255,255,0.6)',
           }}>{t('intel_tweaks')}</button>
         </div>
@@ -533,8 +534,8 @@ export default function IntelligencePage() {
           <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
 
             {/* Cluster profile */}
-            <div style={{ marginBottom: 20, padding: 16, background: 'rgba(255,140,0,0.07)', borderRadius: 12, border: '1px solid rgba(255,140,0,0.2)' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,140,0,0.6)', letterSpacing: '0.1em', marginBottom: 8 }}>{t('intel_cluster_profile')}</div>
+            <div style={{ marginBottom: 20, padding: 16, background: 'rgba(229,72,92,0.07)', borderRadius: 12, border: '1px solid rgba(229,72,92,0.2)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(229,72,92,0.6)', letterSpacing: '0.1em', marginBottom: 8 }}>{t('intel_cluster_profile')}</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--amber)', marginBottom: 4 }}>K4Z3</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {[['92.4%', 'confidence'], ['74', 'incidents'], ['9', 'cities'], ['NOK 1.8M', 'damage']].map(([v, l]) => (
@@ -553,18 +554,18 @@ export default function IntelligencePage() {
                 <div key={i} onClick={() => handleHopClick(i)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', marginBottom: 2,
-                    background: activeHop === i ? 'rgba(255,140,0,0.12)' : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${activeHop === i ? 'rgba(255,140,0,0.3)' : 'rgba(255,255,255,0.05)'}`,
+                    background: activeHop === i ? 'rgba(229,72,92,0.12)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${activeHop === i ? 'rgba(229,72,92,0.3)' : 'rgba(255,255,255,0.05)'}`,
                     transition: 'all 0.15s',
                   }}>
-                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: activeHop === i ? 'rgba(255,140,0,0.3)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 9, color: activeHop === i ? 'var(--amber)' : 'rgba(255,255,255,0.4)', flexShrink: 0 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: activeHop === i ? 'rgba(229,72,92,0.3)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 9, color: activeHop === i ? 'var(--amber)' : 'rgba(255,255,255,0.4)', flexShrink: 0 }}>
                     {i + 1}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontWeight: 600, fontSize: 13, color: activeHop === i ? 'var(--amber)' : '#fff' }}>{hop.city}</span>
                       {hop.status && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 99, background: hop.status === 'ACTIVE' ? 'rgba(0,200,100,0.2)' : 'rgba(255,140,0,0.2)', color: hop.status === 'ACTIVE' ? '#4ef09a' : 'var(--amber)', letterSpacing: '0.06em' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 99, background: hop.status === 'ACTIVE' ? 'rgba(0,200,100,0.2)' : 'rgba(229,72,92,0.2)', color: hop.status === 'ACTIVE' ? '#4ef09a' : 'var(--amber)', letterSpacing: '0.06em' }}>
                           {hop.status}
                         </span>
                       )}
@@ -590,7 +591,7 @@ export default function IntelligencePage() {
 
             {/* Export */}
             <button onClick={handleExport} style={{
-              width: '100%', padding: '13px 20px', background: 'rgba(255,140,0,0.15)', border: '1px solid rgba(255,140,0,0.35)',
+              width: '100%', padding: '13px 20px', background: 'rgba(229,72,92,0.15)', border: '1px solid rgba(229,72,92,0.35)',
               borderRadius: 10, color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: 12,
               letterSpacing: '0.08em', cursor: 'pointer', fontWeight: 600,
             }}>
@@ -630,8 +631,8 @@ export default function IntelligencePage() {
             <div style={{ display: 'flex', gap: 6 }}>
               {[['Slow', 0.4], ['Med', 1], ['Fast', 2.5]].map(([l, v]) => (
                 <button key={l as string} onClick={() => handlePhotonSpeed(v as number)} style={{
-                  flex: 1, padding: '5px 0', background: photonSpeed === v ? 'rgba(255,140,0,0.2)' : 'rgba(255,255,255,0.07)',
-                  border: `1px solid ${photonSpeed === v ? 'rgba(255,140,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                  flex: 1, padding: '5px 0', background: photonSpeed === v ? 'rgba(229,72,92,0.2)' : 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${photonSpeed === v ? 'rgba(229,72,92,0.4)' : 'rgba(255,255,255,0.1)'}`,
                   color: photonSpeed === v ? 'var(--amber)' : 'rgba(255,255,255,0.5)',
                   borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10,
                 }}>{l}</button>
@@ -655,10 +656,10 @@ export default function IntelligencePage() {
           </TweakRow>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <button onClick={handleTrailToggle} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${showTrail ? 'rgba(255,140,0,0.4)' : 'rgba(255,255,255,0.1)'}`, background: showTrail ? 'rgba(255,140,0,0.15)' : 'rgba(255,255,255,0.05)', color: showTrail ? 'var(--amber)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10 }}>
+            <button onClick={handleTrailToggle} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${showTrail ? 'rgba(229,72,92,0.4)' : 'rgba(255,255,255,0.1)'}`, background: showTrail ? 'rgba(229,72,92,0.15)' : 'rgba(255,255,255,0.05)', color: showTrail ? 'var(--amber)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10 }}>
               Trail {showTrail ? 'ON' : 'OFF'}
             </button>
-            <button onClick={handleDotsToggle} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${showDots ? 'rgba(255,140,0,0.4)' : 'rgba(255,255,255,0.1)'}`, background: showDots ? 'rgba(255,140,0,0.15)' : 'rgba(255,255,255,0.05)', color: showDots ? 'var(--amber)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10 }}>
+            <button onClick={handleDotsToggle} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${showDots ? 'rgba(229,72,92,0.4)' : 'rgba(255,255,255,0.1)'}`, background: showDots ? 'rgba(229,72,92,0.15)' : 'rgba(255,255,255,0.05)', color: showDots ? 'var(--amber)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10 }}>
               Dots {showDots ? 'ON' : 'OFF'}
             </button>
           </div>

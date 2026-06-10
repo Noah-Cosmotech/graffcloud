@@ -15,7 +15,7 @@ interface Photo { id: string; url: string; name: string; file: File }
 interface GeoCoords { lat: number; lon: number; accuracy?: number }
 
 const AI_MATCHES = [
-  { code: 'K4Z3', confidence: 92, city: 'Oslo → Barcelona', incidents: 74, color: '#FF8C00' },
+  { code: 'K4Z3', confidence: 92, city: 'Oslo → Barcelona', incidents: 74, color: '#940014' },
   { code: 'BRG-09', confidence: 87, city: 'Bergen', incidents: 12, color: '#FF6B35' },
   { code: 'TRD-22', confidence: 74, city: 'Trondheim', incidents: 8, color: '#E85D04' },
 ]
@@ -175,12 +175,12 @@ export default function UploadPage() {
     const n = i + 1; const done = step > n; const active = step === n
     return (
       <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {i > 0 && <div style={{ width: 20, height: 1, background: done ? 'var(--amber)' : 'var(--line-2)', flexShrink: 0 }} />}
+        {i > 0 && <div style={{ width: 20, height: 1, background: done ? 'var(--brand)' : 'var(--line-2)', flexShrink: 0 }} />}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <div style={{
             width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: done ? 'var(--amber)' : active ? 'var(--ink)' : 'transparent',
-            border: `2px solid ${done ? 'var(--amber)' : active ? 'var(--ink)' : 'var(--line-2)'}`,
+            background: done ? 'var(--brand)' : active ? 'var(--ink)' : 'transparent',
+            border: `2px solid ${done ? 'var(--brand)' : active ? 'var(--ink)' : 'var(--line-2)'}`,
             fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
             color: done || active ? '#fff' : 'var(--ink-4)', flexShrink: 0,
           }}>{done ? '✓' : n}</div>
@@ -230,9 +230,9 @@ export default function UploadPage() {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragOver ? 'var(--amber)' : 'var(--line-2)'}`,
+                  border: `2px dashed ${dragOver ? 'var(--brand)' : 'var(--line-2)'}`,
                   borderRadius: 16, padding: '48px 32px', textAlign: 'center',
-                  cursor: 'pointer', background: dragOver ? 'rgba(255,140,0,0.04)' : 'var(--surface)',
+                  cursor: 'pointer', background: dragOver ? 'rgba(148,0,20,0.03)' : 'var(--surface)',
                   transition: 'all 0.15s', marginBottom: 16,
                 }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🖼</div>
@@ -308,7 +308,7 @@ export default function UploadPage() {
 
                 <Field label="">
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={cctv} onChange={e => setCctv(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--amber)' }} />
+                    <input type="checkbox" checked={cctv} onChange={e => setCctv(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--brand)' }} />
                     <span style={{ fontSize: 14, color: 'var(--ink)' }}>CCTV footage available</span>
                   </label>
                 </Field>
@@ -334,9 +334,9 @@ export default function UploadPage() {
                 </Field>
 
                 {/* Optional bounty posting */}
-                <div style={{ background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.18)', borderRadius: 12, padding: '16px 18px' }}>
+                <div style={{ background: 'rgba(148,0,20,0.05)', border: '1px solid rgba(148,0,20,0.16)', borderRadius: 12, padding: '16px 18px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: postBounty ? 14 : 0 }}>
-                    <input type="checkbox" checked={postBounty} onChange={e => setPostBounty(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--amber)' }} />
+                    <input type="checkbox" checked={postBounty} onChange={e => setPostBounty(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--brand)' }} />
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Post a bounty reward</div>
                       <div style={{ fontSize: 12, color: 'var(--ink-4)' }}>Offer NOK reward for identification of the perpetrator</div>
@@ -383,7 +383,7 @@ export default function UploadPage() {
                 <div style={{ fontSize: 40 }}>✓</div>
               </div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 38, marginBottom: 8 }}>Incident Reported</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: 'var(--amber)', marginBottom: 8 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: 'var(--brand)', marginBottom: 8 }}>
                 {incidentDisplayId ?? 'Saving…'}
               </div>
               <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 40 }}>Your report has been securely sealed and submitted to the GraffCloud platform.</div>
@@ -395,10 +395,10 @@ export default function UploadPage() {
                   return (
                     <div key={label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                       <div style={{ flex: 1, textAlign: 'center' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? 'var(--green)' : active ? 'var(--amber)' : 'var(--line)', transition: 'all 0.4s', fontSize: 16 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? 'var(--green)' : active ? 'var(--brand)' : 'var(--line)', transition: 'all 0.4s', fontSize: 16 }}>
                           {done ? '✓' : active ? '⟳' : '○'}
                         </div>
-                        <div style={{ fontSize: 11, color: done ? 'var(--green)' : active ? 'var(--amber)' : 'var(--ink-5)', fontFamily: 'var(--font-mono)' }}>{label}</div>
+                        <div style={{ fontSize: 11, color: done ? 'var(--green)' : active ? 'var(--brand)' : 'var(--ink-5)', fontFamily: 'var(--font-mono)' }}>{label}</div>
                       </div>
                       {i < STAGES.length - 1 && <div style={{ width: 24, height: 2, background: uploadStage > i ? 'var(--green)' : 'var(--line)', transition: 'background 0.4s', flexShrink: 0, margin: '0 4px' }} />}
                     </div>
@@ -406,11 +406,11 @@ export default function UploadPage() {
                 })}
               </div>
 
-              <div style={{ background: 'rgba(255,140,0,0.07)', border: '1px solid rgba(255,140,0,0.2)', borderRadius: 14, padding: '20px 24px', maxWidth: 400, margin: '0 auto 32px', textAlign: 'left', position: 'relative' }}>
+              <div style={{ background: 'rgba(148,0,20,0.05)', border: '1px solid rgba(148,0,20,0.18)', borderRadius: 14, padding: '20px 24px', maxWidth: 400, margin: '0 auto 32px', textAlign: 'left', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 10, right: 12, fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.08em', color: 'var(--ink-5)', background: 'var(--surface)', padding: '2px 6px', borderRadius: 4 }}>SAMPLE</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.1em', marginBottom: 12 }}>AI MATCH — PILOT PREVIEW</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--brand)', letterSpacing: '0.1em', marginBottom: 12 }}>AI MATCH — PILOT PREVIEW</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--amber)' }}>K4Z3</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--brand)' }}>K4Z3</div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>92% confidence</div>
                     <div style={{ fontSize: 13, color: 'var(--ink-4)' }}>74 prior incidents across 9 cities</div>
@@ -449,8 +449,8 @@ export default function UploadPage() {
               {AI_MATCHES.map((m, i) => (
                 <div key={m.code} onClick={() => setSelectedMatch(i)} style={{
                   padding: '12px 14px', borderRadius: 10, marginBottom: 8, cursor: 'pointer',
-                  background: selectedMatch === i ? 'rgba(255,140,0,0.08)' : 'rgba(10,10,10,0.02)',
-                  border: `1px solid ${selectedMatch === i ? 'rgba(255,140,0,0.3)' : 'var(--line)'}`,
+                  background: selectedMatch === i ? 'rgba(148,0,20,0.06)' : 'rgba(10,10,10,0.02)',
+                  border: `1px solid ${selectedMatch === i ? 'rgba(148,0,20,0.28)' : 'var(--line)'}`,
                   transition: 'all 0.15s',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>

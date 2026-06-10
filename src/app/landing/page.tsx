@@ -42,28 +42,28 @@ function HeroGlobe() {
       <text x="113" y="101" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="monospace">Reykjavík</text>
 
       {/* Trondheim — northernmost primary */}
-      <circle cx="225" cy="119" r="4" fill="oklch(0.76 0.15 65)" opacity="0.85" />
-      <circle cx="225" cy="119" r="8" fill="oklch(0.76 0.15 65)" opacity="0.15" />
+      <circle cx="225" cy="119" r="4" fill="var(--brand-bright)" opacity="0.85" />
+      <circle cx="225" cy="119" r="8" fill="var(--brand-bright)" opacity="0.15" />
       <text x="230" y="116" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Trondheim</text>
 
       {/* Bergen */}
-      <circle cx="214" cy="134" r="3.5" fill="oklch(0.76 0.15 65)" />
-      <circle cx="214" cy="134" r="8" fill="oklch(0.76 0.15 65)" opacity="0.15" />
+      <circle cx="214" cy="134" r="3.5" fill="var(--brand-bright)" />
+      <circle cx="214" cy="134" r="8" fill="var(--brand-bright)" opacity="0.15" />
       <text x="172" y="131" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Bergen</text>
 
       {/* Oslo — primary hub */}
-      <circle cx="227" cy="137" r="6" fill="oklch(0.76 0.15 65)" />
-      <circle cx="227" cy="137" r="13" fill="oklch(0.76 0.15 65)" opacity="0.2" />
-      <circle cx="227" cy="137" r="20" fill="oklch(0.76 0.15 65)" opacity="0.07" />
+      <circle cx="227" cy="137" r="6" fill="var(--brand-bright)" />
+      <circle cx="227" cy="137" r="13" fill="var(--brand-bright)" opacity="0.2" />
+      <circle cx="227" cy="137" r="20" fill="var(--brand-bright)" opacity="0.07" />
       <text x="237" y="133" fill="white" fontSize="11" fontFamily="monospace" fontWeight="600">Oslo</text>
 
       {/* Göteborg */}
-      <circle cx="231" cy="147" r="3" fill="oklch(0.76 0.15 65)" opacity="0.7" />
+      <circle cx="231" cy="147" r="3" fill="var(--brand-bright)" opacity="0.7" />
       <text x="237" y="144" fill="rgba(255,255,255,0.55)" fontSize="9" fontFamily="monospace">Göteborg</text>
 
       {/* Copenhagen */}
-      <circle cx="233" cy="157" r="3.5" fill="oklch(0.76 0.15 65)" opacity="0.75" />
-      <circle cx="233" cy="157" r="8" fill="oklch(0.76 0.15 65)" opacity="0.12" />
+      <circle cx="233" cy="157" r="3.5" fill="var(--brand-bright)" opacity="0.75" />
+      <circle cx="233" cy="157" r="8" fill="var(--brand-bright)" opacity="0.12" />
       <text x="239" y="154" fill="rgba(255,255,255,0.65)" fontSize="9" fontFamily="monospace">Copenhagen</text>
 
       {/* Hamburg */}
@@ -75,8 +75,8 @@ function HeroGlobe() {
       <text x="165" y="169" fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="monospace">Amsterdam</text>
 
       {/* Barcelona — southern terminus */}
-      <circle cx="199" cy="226" r="5" fill="oklch(0.76 0.15 65)" opacity="0.9" />
-      <circle cx="199" cy="226" r="11" fill="oklch(0.76 0.15 65)" opacity="0.18" />
+      <circle cx="199" cy="226" r="5" fill="var(--brand-bright)" opacity="0.9" />
+      <circle cx="199" cy="226" r="11" fill="var(--brand-bright)" opacity="0.18" />
       <text x="207" y="222" fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="monospace">Barcelona</text>
     </svg>
   )
@@ -95,14 +95,14 @@ function RiskChart() {
     <svg viewBox="0 0 360 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 100 }}>
       <defs>
         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="oklch(0.76 0.15 65)" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="oklch(0.76 0.15 65)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--brand-bright)" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="var(--brand-bright)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={areaD} fill="url(#chartGrad)" />
-      <path d={pathD} stroke="oklch(0.76 0.15 65)" strokeWidth="2" fill="none" strokeLinejoin="round" />
+      <path d={pathD} stroke="var(--brand-bright)" strokeWidth="2" fill="none" strokeLinejoin="round" />
       {points.map(([x, y], i) => i % 2 === 0 && (
-        <circle key={i} cx={x} cy={y} r="3" fill="oklch(0.76 0.15 65)" />
+        <circle key={i} cx={x} cy={y} r="3" fill="var(--brand-bright)" />
       ))}
       {/* X axis labels */}
       <text x="0" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">Jan</text>
@@ -132,7 +132,7 @@ function GraffGlyph({ label }: { label: string }) {
           fontSize="28"
           fontWeight="900"
           fontFamily="monospace"
-          fill="oklch(0.76 0.15 65)"
+          fill="var(--brand-bright)"
           letterSpacing="-1"
           style={{ fontStyle: 'italic' }}
         >
@@ -189,7 +189,7 @@ export default function LandingPage() {
               color: 'var(--ink)',
             }}>
               {t('hero_title_a')}<br />
-              <em style={{ color: 'var(--amber-ink)', fontStyle: 'italic' }}>
+              <em style={{ color: 'var(--brand)', fontStyle: 'italic' }}>
                 {t('hero_title_b')}
               </em>
             </h1>
@@ -276,11 +276,11 @@ export default function LandingPage() {
               position: 'absolute',
               bottom: 28,
               right: 28,
-              background: 'oklch(0.76 0.15 65)',
+              background: 'var(--brand)',
               borderRadius: 'var(--r-md)',
               padding: '8px 14px',
             }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#1a1000' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#fff' }}>
                 92% match
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
               <div style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 42,
-                color: 'oklch(0.76 0.15 65)',
+                color: 'var(--brand-bright)',
                 lineHeight: 1,
                 marginBottom: 8,
               }}>
@@ -349,7 +349,7 @@ export default function LandingPage() {
               <div style={{ flex: 1, textAlign: 'center' }}>
                 <div style={{
                   height: 2,
-                  background: 'linear-gradient(90deg, oklch(0.76 0.15 65) 0%, oklch(0.76 0.15 65) 100%)',
+                  background: 'linear-gradient(90deg, var(--brand) 0%, var(--brand) 100%)',
                   borderRadius: 2,
                   position: 'relative',
                   marginBottom: 10,
@@ -360,13 +360,13 @@ export default function LandingPage() {
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     background: 'var(--surface)',
-                    border: '2px solid oklch(0.76 0.15 65)',
+                    border: '2px solid var(--brand)',
                     borderRadius: 'var(--r-pill)',
                     padding: '4px 10px',
                     fontFamily: 'var(--font-mono)',
                     fontSize: 12,
                     fontWeight: 700,
-                    color: 'var(--amber-ink)',
+                    color: 'var(--brand)',
                     whiteSpace: 'nowrap' as const,
                   }}>
                     92% match
@@ -414,7 +414,7 @@ export default function LandingPage() {
                   borderRadius: 'var(--r-md)',
                   padding: '20px 22px',
                 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'oklch(0.76 0.15 65)', marginBottom: 6 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--brand-bright)', marginBottom: 6 }}>
                     {s.n}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{s.l}</div>
@@ -467,7 +467,7 @@ export default function LandingPage() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: 11,
                   letterSpacing: '0.12em',
-                  color: 'var(--amber-ink)',
+                  color: 'var(--brand)',
                   marginBottom: 16,
                 }}>
                   STEP {step.n}
@@ -535,10 +535,10 @@ export default function LandingPage() {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    background: 'oklch(0.76 0.15 65)',
+                    background: 'var(--brand)',
                     display: 'inline-block',
                   }} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber-ink)', letterSpacing: '0.1em', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--brand)', letterSpacing: '0.1em', fontWeight: 600 }}>
                     LIVE
                   </span>
                 </div>
@@ -670,7 +670,7 @@ export default function LandingPage() {
                 RISK SCORE · PORTFOLIO AGGREGATE
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, color: 'oklch(0.76 0.15 65)' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, color: 'var(--brand-bright)' }}>
                   −22%
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
@@ -753,8 +753,8 @@ export default function LandingPage() {
                 top: -12,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                background: 'oklch(0.76 0.15 65)',
-                color: '#1a0f00',
+                background: 'var(--brand)',
+                color: '#fff',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 10,
                 fontWeight: 700,
@@ -775,15 +775,15 @@ export default function LandingPage() {
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
                 {['Up to 25 properties', 'Nordic movement graph', 'Court-ready PDF export', 'Crew & route tracking', 'Dedicated support'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: 'oklch(0.76 0.15 65)' }}>✓</span> {f}
+                    <span style={{ color: 'var(--brand-bright)' }}>✓</span> {f}
                   </li>
                 ))}
               </ul>
               <Link href="/login?mode=signup&plan=professional" className="btn btn-primary" style={{
                 width: '100%',
                 justifyContent: 'center',
-                background: 'oklch(0.76 0.15 65)',
-                color: '#1a0f00',
+                background: 'var(--brand)',
+                color: '#fff',
               }}>
                 {t('pricing_cta_start')}
               </Link>

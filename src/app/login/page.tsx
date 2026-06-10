@@ -27,29 +27,29 @@ function LoginGlobe() {
       <path d="M180 30 Q214 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
       <path d="M180 30 Q146 160 180 290" stroke="white" strokeWidth="0.5" fill="none" />
       {/* K4Z3 trail: Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona */}
-      <path d="M186 122 Q180 111 174 120" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.6" />
-      <path d="M174 120 Q179 102 185 107" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.55" />
-      <path d="M185 107 Q190 114 191 139" stroke="oklch(0.76 0.15 65)" strokeWidth="1" fill="none" opacity="0.5" />
-      <path d="M191 139 Q190 140 185 149" stroke="oklch(0.76 0.15 65)" strokeWidth="0.9" fill="none" opacity="0.45" />
-      <path d="M185 149 Q178 149 172 153" stroke="oklch(0.76 0.15 65)" strokeWidth="0.9" fill="none" opacity="0.4" />
-      <path d="M172 153 Q164 179 162 198" stroke="oklch(0.76 0.15 65)" strokeWidth="1.1" fill="none" opacity="0.6" />
+      <path d="M186 122 Q180 111 174 120" stroke="var(--brand-bright)" strokeWidth="1" fill="none" opacity="0.6" />
+      <path d="M174 120 Q179 102 185 107" stroke="var(--brand-bright)" strokeWidth="1" fill="none" opacity="0.55" />
+      <path d="M185 107 Q190 114 191 139" stroke="var(--brand-bright)" strokeWidth="1" fill="none" opacity="0.5" />
+      <path d="M191 139 Q190 140 185 149" stroke="var(--brand-bright)" strokeWidth="0.9" fill="none" opacity="0.45" />
+      <path d="M185 149 Q178 149 172 153" stroke="var(--brand-bright)" strokeWidth="0.9" fill="none" opacity="0.4" />
+      <path d="M172 153 Q164 179 162 198" stroke="var(--brand-bright)" strokeWidth="1.1" fill="none" opacity="0.6" />
       {/* Trondheim — above Oslo */}
-      <circle cx="185" cy="107" r="3" fill="oklch(0.76 0.15 65)" />
-      <circle cx="185" cy="107" r="7" fill="oklch(0.76 0.15 65)" opacity="0.25" />
+      <circle cx="185" cy="107" r="3" fill="var(--brand-bright)" />
+      <circle cx="185" cy="107" r="7" fill="var(--brand-bright)" opacity="0.25" />
       {/* Oslo — primary hub */}
-      <circle cx="186" cy="122" r="4" fill="oklch(0.76 0.15 65)" />
-      <circle cx="186" cy="122" r="9" fill="oklch(0.76 0.15 65)" opacity="0.3" />
+      <circle cx="186" cy="122" r="4" fill="var(--brand-bright)" />
+      <circle cx="186" cy="122" r="9" fill="var(--brand-bright)" opacity="0.3" />
       {/* Bergen — left of Oslo */}
-      <circle cx="174" cy="120" r="2.5" fill="oklch(0.76 0.15 65)" opacity="0.8" />
+      <circle cx="174" cy="120" r="2.5" fill="var(--brand-bright)" opacity="0.8" />
       {/* Göteborg */}
-      <circle cx="191" cy="139" r="2.5" fill="oklch(0.76 0.15 65)" opacity="0.7" />
+      <circle cx="191" cy="139" r="2.5" fill="var(--brand-bright)" opacity="0.7" />
       {/* Copenhagen */}
       <circle cx="185" cy="149" r="2" fill="white" opacity="0.6" />
       {/* Hamburg */}
       <circle cx="172" cy="153" r="2" fill="white" opacity="0.5" />
       {/* Barcelona — southern terminus */}
-      <circle cx="162" cy="198" r="3.5" fill="oklch(0.76 0.15 65)" opacity="0.85" />
-      <circle cx="162" cy="198" r="8" fill="oklch(0.76 0.15 65)" opacity="0.2" />
+      <circle cx="162" cy="198" r="3.5" fill="var(--brand-bright)" opacity="0.85" />
+      <circle cx="162" cy="198" r="8" fill="var(--brand-bright)" opacity="0.2" />
     </svg>
   )
 }
@@ -232,7 +232,7 @@ export default function LoginPage() {
             maxWidth: 400,
           }}>
             From photo to court-ready evidence in{' '}
-            <em style={{ color: 'oklch(0.76 0.15 65)', fontStyle: 'italic' }}>48 hours.</em>
+            <em style={{ color: 'var(--brand-bright)', fontStyle: 'italic' }}>48 hours.</em>
           </h2>
 
           {/* Stats row */}
@@ -243,7 +243,7 @@ export default function LoginPage() {
               { n: '9', l: 'Cities' },
             ].map((s, i) => (
               <div key={i}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'oklch(0.76 0.15 65)', lineHeight: 1, marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--brand-bright)', lineHeight: 1, marginBottom: 4 }}>
                   {s.n}
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}>{s.l}</div>
