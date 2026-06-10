@@ -487,10 +487,10 @@ export default function IntelligencePage() {
       </div>
 
       {/* Main */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="gc-intel-main" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
         {/* Globe panel */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', minWidth: 0 }}>
+        <div className="gc-intel-globe" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', minWidth: 0 }}>
           <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
             <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
           </div>
@@ -526,7 +526,7 @@ export default function IntelligencePage() {
         </div>
 
         {/* Right panel */}
-        <div style={{
+        <div className="gc-intel-right" style={{
           width: 360, background: '#111118', borderLeft: '1px solid rgba(255,255,255,0.07)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0
         }}>
@@ -602,7 +602,7 @@ export default function IntelligencePage() {
 
       {/* Tweaks panel */}
       {showTweaks && (
-        <div style={{
+        <div className="gc-tweaks-panel" style={{
           position: 'fixed', top: 60, right: 370, width: 260, background: '#18181f',
           border: '1px solid rgba(255,255,255,0.12)', borderRadius: 14, padding: 20,
           zIndex: 100, boxShadow: '0 20px 60px rgba(0,0,0,0.8)',

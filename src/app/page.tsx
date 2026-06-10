@@ -163,7 +163,7 @@ function TileCard({ tile }: { tile: typeof tiles[number] }) {
 
 export default function HubPage() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '0 0 80px' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', padding: '0 0 80px' }}>
       {/* Header */}
       <header style={{
         display: 'flex',

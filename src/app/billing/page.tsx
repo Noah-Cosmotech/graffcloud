@@ -145,7 +145,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
       <Nav active="pricing" />
 
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '60px 40px' }} className="gc-billing-main">

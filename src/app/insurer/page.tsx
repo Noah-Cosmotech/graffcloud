@@ -155,7 +155,7 @@ export default function InsurerPage() {
   const bergenPath = BERGEN_DATA.map((v, i) => `${i === 0 ? 'M' : 'L'}${px(i)},${py(v)}`).join(' ')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
       <Nav active="insurer" />
 
       {/* ── HERO ── */}

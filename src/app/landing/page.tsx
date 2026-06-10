@@ -167,7 +167,7 @@ export default function LandingPage() {
   const { t } = useI18n()
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100dvh' }}>
       <Nav active="product" />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}

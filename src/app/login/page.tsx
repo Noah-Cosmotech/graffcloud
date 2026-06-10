@@ -196,11 +196,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
+    <div className="gc-login-wrap" style={{ display: 'flex', minHeight: '100dvh', fontFamily: 'var(--font-sans)' }}>
       <ToastContainer />
 
       {/* ── LEFT PANEL ─────────────────────────────────────────── */}
-      <div style={{
+      <div className="gc-login-left" style={{
         flex: 1,
         background: 'var(--ink)',
         display: 'flex',
@@ -295,7 +295,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT PANEL ────────────────────────────────────────── */}
-      <div style={{
+      <div className="gc-login-right" style={{
         width: 520,
         flexShrink: 0,
         background: 'var(--bg)',

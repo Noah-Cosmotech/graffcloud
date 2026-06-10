@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { I18nProvider } from '@/components/I18nProvider'
@@ -23,6 +23,13 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#F5F1EA',
+}
+
 export const metadata: Metadata = {
   title: 'GraffCloud — Nordic Urban Vandalism Intelligence',
   description: 'Turn graffiti into actionable evidence. Cluster tags, track crew movement across cities, and hand police a case file that actually closes.',
@@ -33,7 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>{`
           :root {
             --font-display: var(--font-instrument-serif), 'Times New Roman', serif;
