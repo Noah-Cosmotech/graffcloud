@@ -280,7 +280,8 @@ export default function InsurerPage() {
               Weekly pattern · last 8 weeks
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '44px repeat(7, 1fr)', gap: 3 }}>
+            <div className="r-scroll-x">
+            <div style={{ display: 'grid', gridTemplateColumns: '44px repeat(7, 1fr)', gap: 3, minWidth: 420 }}>
               {/* Day headers */}
               <div />
               {DAYS.map(d => (
@@ -309,6 +310,7 @@ export default function InsurerPage() {
                   ))}
                 </>
               ))}
+            </div>
             </div>
 
             {/* Legend */}

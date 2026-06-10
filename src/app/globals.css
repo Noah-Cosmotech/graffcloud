@@ -412,6 +412,28 @@ body {
   .gc-brand { min-height: 44px; }
 }
 
+/* ── HUB (first page) ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gc-hub-header {
+    padding: 14px max(20px, env(safe-area-inset-right))
+             14px max(20px, env(safe-area-inset-left)) !important;
+  }
+  .gc-hub-version { display: none; } /* frees space; toggle no longer overlaps brand */
+  .gc-hub-hero { padding: 36px 20px 28px !important; }
+  .gc-hub-grid { grid-template-columns: 1fr !important; padding: 0 20px !important; gap: 12px !important; }
+  .gc-hub-grid > a { grid-column: 1 / -1 !important; min-height: 150px !important; padding: 24px 22px !important; }
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gc-footer { padding: 48px 20px 36px !important; }
+  .gc-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 28px !important; }
+  .gc-footer-grid > div:first-child { grid-column: 1 / -1; } /* brand block full-width */
+}
+@media (max-width: 400px) {
+  .gc-footer-grid { grid-template-columns: 1fr !important; }
+}
+
 /* ── LOGIN PAGE ──────────────────────────────────────────────── */
 @media (max-width: 920px) {
   .gc-login-wrap { min-height: 100dvh !important; }

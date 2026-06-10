@@ -98,7 +98,7 @@ export default function HubPage() {
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', padding: '0 0 80px' }}>
       {/* Header */}
-      <header style={{
+      <header className="gc-hub-header" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -118,7 +118,7 @@ export default function HubPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <LangToggle />
-          <span style={{
+          <span className="gc-hub-version" style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
             color: 'var(--ink-4)',
@@ -130,7 +130,7 @@ export default function HubPage() {
       </header>
 
       {/* Hero text */}
-      <div style={{ padding: '64px 48px 48px', maxWidth: 1400 }}>
+      <div className="gc-hub-hero" style={{ padding: '64px 48px 48px', maxWidth: 1400 }}>
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'clamp(36px, 5vw, 64px)',
@@ -156,7 +156,7 @@ export default function HubPage() {
       </div>
 
       {/* 12-column tile grid */}
-      <div style={{
+      <div className="gc-hub-grid" style={{
         padding: '0 48px',
         display: 'grid',
         gridTemplateColumns: 'repeat(12, 1fr)',

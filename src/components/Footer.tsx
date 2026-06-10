@@ -6,9 +6,9 @@ import { useI18n } from './I18nProvider'
 export function Footer() {
   const { t } = useI18n()
   return (
-    <footer style={{ background: 'var(--ink)', color: '#fff', padding: '80px 40px 48px' }}>
+    <footer className="gc-footer" style={{ background: 'var(--ink)', color: '#fff', padding: '80px 40px 48px' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1fr', gap: 40 }}>
+        <div className="gc-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1fr', gap: 40 }}>
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, marginBottom: 14 }}>GraffCloud</div>
             <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 280, fontSize: 13.5, lineHeight: 1.55 }}>
