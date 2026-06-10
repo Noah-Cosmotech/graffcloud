@@ -4,92 +4,24 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { GCLogo } from '@/components/GCLogo'
 import { LangToggle } from '@/components/LangToggle'
+import { useI18n } from '@/components/I18nProvider'
 
 const tiles = [
-  {
-    num: '01',
-    label: 'Marketing',
-    title: 'Landing & pricing',
-    desc: 'Public marketing site, feature overview, city coverage and plan selection.',
-    href: '/landing',
-    span: 12,
-    bg: 'var(--bg-sand)',
-    dark: false,
-    hero: true,
-  },
-  {
-    num: '02',
-    label: 'Auth',
-    title: 'Sign in',
-    desc: 'BankID, Google SSO and email authentication flow.',
-    href: '/login',
-    span: 6,
-    bg: 'var(--ink)',
-    dark: true,
-  },
-  {
-    num: '03',
-    label: 'Owner',
-    title: 'Portfolio dashboard',
-    desc: 'Incident map, cost metrics, recent incidents and portfolio readiness.',
-    href: '/dashboard',
-    span: 6,
-    bg: 'var(--bg-mist)',
-    dark: false,
-  },
-  {
-    num: '04',
-    label: 'Intelligence',
-    title: 'Movement Intelligence Globe',
-    desc: 'Signature tracking across the Nordic graph. Real-time crew movement and timeline playback.',
-    href: '/intelligence',
-    span: 8,
-    bg: 'var(--ink-2)',
-    dark: true,
-  },
-  {
-    num: '05',
-    label: 'Reporting',
-    title: 'Report incident',
-    desc: 'Multi-step upload wizard with live AI match confidence.',
-    href: '/upload',
-    span: 4,
-    bg: 'var(--amber-wash)',
-    dark: false,
-  },
-  {
-    num: '06',
-    label: 'Marketplace',
-    title: 'Bounty marketplace',
-    desc: 'Post and claim bounties on active signatures. Crowd-sourced intelligence.',
-    href: '/bounty',
-    span: 4,
-    bg: 'var(--bg)',
-    dark: false,
-  },
-  {
-    num: '07',
-    label: 'Billing',
-    title: 'Plans & billing',
-    desc: 'Stripe-powered subscription management and invoice history.',
-    href: '/billing',
-    span: 4,
-    bg: 'var(--surface)',
-    dark: false,
-  },
-  {
-    num: '08',
-    label: 'Insurer',
-    title: 'Insurer console',
-    desc: 'Risk scores, predictive heatmaps and claim intelligence for Nordic insurers.',
-    href: '/insurer',
-    span: 4,
-    bg: 'var(--bg-mist)',
-    dark: false,
-  },
-]
+  { num: '01', key: 'hub_t1', href: '/landing', span: 12, bg: 'var(--bg-sand)', dark: false, hero: true },
+  { num: '02', key: 'hub_t2', href: '/login', span: 6, bg: 'var(--ink)', dark: true },
+  { num: '03', key: 'hub_t3', href: '/dashboard', span: 6, bg: 'var(--bg-mist)', dark: false },
+  { num: '04', key: 'hub_t4', href: '/intelligence', span: 8, bg: 'var(--ink-2)', dark: true },
+  { num: '05', key: 'hub_t5', href: '/upload', span: 4, bg: 'var(--amber-wash)', dark: false },
+  { num: '06', key: 'hub_t6', href: '/bounty', span: 4, bg: 'var(--bg)', dark: false },
+  { num: '07', key: 'hub_t7', href: '/billing', span: 4, bg: 'var(--surface)', dark: false },
+  { num: '08', key: 'hub_t8', href: '/insurer', span: 4, bg: 'var(--bg-mist)', dark: false },
+] as const
 
-function TileCard({ tile }: { tile: typeof tiles[number] }) {
+type Tile = typeof tiles[number]
+type TKey = Parameters<ReturnType<typeof useI18n>['t']>[0]
+
+function TileCard({ tile }: { tile: Tile }) {
+  const { t } = useI18n()
   const [hovered, setHovered] = useState(false)
   return (
     <Link
@@ -101,7 +33,7 @@ function TileCard({ tile }: { tile: typeof tiles[number] }) {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: tile.hero ? '48px 56px' : '32px 36px',
+        padding: 'hero' in tile && tile.hero ? '48px 56px' : '32px 36px',
         background: tile.bg,
         borderRadius: 'var(--r-xl)',
         border: '1px solid var(--line)',
@@ -110,7 +42,7 @@ function TileCard({ tile }: { tile: typeof tiles[number] }) {
         transition: 'transform .18s ease, box-shadow .18s ease',
         transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
         boxShadow: hovered ? 'var(--shadow-pop)' : 'var(--shadow-1)',
-        minHeight: tile.hero ? 220 : 180,
+        minHeight: 'hero' in tile && tile.hero ? 220 : 180,
         cursor: 'pointer',
       }}
     >
@@ -123,26 +55,26 @@ function TileCard({ tile }: { tile: typeof tiles[number] }) {
           opacity: tile.dark ? 0.55 : 0.5,
           marginBottom: 20,
         }}>
-          {tile.num} · {tile.label}
+          {tile.num} · {t(`${tile.key}_label` as TKey)}
         </div>
         <h3 style={{
           fontFamily: 'var(--font-display)',
-          fontSize: tile.hero ? 36 : 22,
+          fontSize: 'hero' in tile && tile.hero ? 36 : 22,
           fontWeight: 400,
           margin: '0 0 12px',
           lineHeight: 1.1,
           letterSpacing: '-0.01em',
         }}>
-          {tile.title}
+          {t(`${tile.key}_title` as TKey)}
         </h3>
         <p style={{
           fontSize: 14,
           lineHeight: 1.55,
           opacity: tile.dark ? 0.7 : 0.65,
           margin: 0,
-          maxWidth: tile.hero ? 560 : 320,
+          maxWidth: 'hero' in tile && tile.hero ? 560 : 320,
         }}>
-          {tile.desc}
+          {t(`${tile.key}_desc` as TKey)}
         </p>
       </div>
       <div style={{
@@ -155,13 +87,14 @@ function TileCard({ tile }: { tile: typeof tiles[number] }) {
         opacity: tile.dark ? 0.85 : 0.7,
         letterSpacing: '0.02em',
       }}>
-        Enter <span style={{ fontSize: 16 }}>→</span>
+        {t('hub_enter')} <span style={{ fontSize: 16 }}>→</span>
       </div>
     </Link>
   )
 }
 
 export default function HubPage() {
+  const { t } = useI18n()
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', padding: '0 0 80px' }}>
       {/* Header */}
@@ -207,9 +140,9 @@ export default function HubPage() {
           margin: '0 0 20px',
           maxWidth: 820,
         }}>
-          GraffCloud — the Nordic{' '}
-          <em style={{ color: 'var(--amber-ink)', fontStyle: 'italic' }}>urban vandalism</em>
-          {' '}intelligence platform.
+          {t('hub_title_a')}
+          <em style={{ color: 'var(--brand)', fontStyle: 'italic' }}>{t('hub_title_em')}</em>
+          {t('hub_title_b')}
         </h1>
         <p style={{
           fontSize: 17,
@@ -218,7 +151,7 @@ export default function HubPage() {
           maxWidth: 600,
           margin: 0,
         }}>
-          Eight surfaces, one intelligence graph. Select a section to explore the prototype.
+          {t('hub_sub')}
         </p>
       </div>
 

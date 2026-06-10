@@ -109,13 +109,13 @@ export default function LoginPage() {
   const validateFields = () => {
     const newErrors: {email?: string; password?: string; name?: string} = {}
     if (!emailRegex.test(email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('err_invalid_email')
     }
     if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = t('err_short_password')
     }
     if (mode === 'signup' && name.trim().length < 2) {
-      newErrors.name = 'Please enter your name'
+      newErrors.name = t('err_name_required')
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -319,12 +319,12 @@ export default function LoginPage() {
             margin: '0 0 8px',
             lineHeight: 1.05,
           }}>
-            {mode === 'signin' ? t('login_welcome') : 'Create your account'}
+            {mode === 'signin' ? t('login_welcome') : t('login_create_title')}
           </h2>
           <p style={{ margin: '0 0 28px', fontSize: 14, color: 'var(--ink-4)' }}>
             {mode === 'signin'
-              ? 'Sign in to your GraffCloud workspace.'
-              : 'Pilot access for property owners and board members.'}
+              ? t('login_signin_sub')
+              : t('login_signup_sub')}
           </p>
 
           {!authConfigured && (
@@ -357,8 +357,8 @@ export default function LoginPage() {
               marginBottom: 20,
               lineHeight: 1.5,
             }}>
-              <strong>Check your email.</strong> We sent a confirmation link to{' '}
-              <strong>{email}</strong>. Click it to activate your account.
+              <strong>{t('login_check_email')}</strong> {t('login_confirm_sent_a')}{' '}
+              <strong>{email}</strong>. {t('login_confirm_sent_b')}
             </div>
           )}
 
@@ -424,7 +424,7 @@ export default function LoginPage() {
             fontSize: 12,
           }}>
             <div style={{ flex: 1, height: 1, background: 'var(--line-2)' }} />
-            or email
+            {t('login_or_email')}
             <div style={{ flex: 1, height: 1, background: 'var(--line-2)' }} />
           </div>
 
@@ -435,7 +435,7 @@ export default function LoginPage() {
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
                   <input
                     type="text"
-                    placeholder="Full name"
+                    placeholder={t('login_name_placeholder')}
                     value={name}
                     onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: undefined })) }}
                     autoComplete="name"
@@ -459,7 +459,7 @@ export default function LoginPage() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Organisation (e.g. Obos Eiendom) — optional"
+                  placeholder={t('login_org_placeholder')}
                   value={org}
                   onChange={(e) => setOrg(e.target.value)}
                   autoComplete="organization"
@@ -536,7 +536,7 @@ export default function LoginPage() {
           <div style={{ textAlign: 'right' as const, marginBottom: 20, minHeight: 18 }}>
             {mode === 'signup' ? null : forgotSent ? (
               <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 500 }}>
-                Reset link sent to {email}
+                {t('login_reset_sent_to')} {email}
               </span>
             ) : (
               <button
@@ -605,8 +605,8 @@ export default function LoginPage() {
             }}
           >
             {loading
-              ? (mode === 'signin' ? t('login_signing_in') : 'Creating account…')
-              : (mode === 'signin' ? t('login_submit') : 'Create account')}
+              ? (mode === 'signin' ? t('login_signing_in') : t('login_creating'))
+              : (mode === 'signin' ? t('login_submit') : t('login_create_btn'))}
           </button>
 
           {/* BankID button */}
@@ -665,12 +665,12 @@ export default function LoginPage() {
                     textDecorationColor: 'var(--line-2)',
                   }}
                 >
-                  Create account →
+                  {t('login_create_link')}
                 </button>
               </>
             ) : (
               <>
-                Already have an account?{' '}
+                {t('login_have_account')}{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('signin'); setErrors({}); setSignupSent(false) }}
@@ -687,7 +687,7 @@ export default function LoginPage() {
                     textDecorationColor: 'var(--line-2)',
                   }}
                 >
-                  Sign in →
+                  {t('login_signin_link')}
                 </button>
               </>
             )}
@@ -709,7 +709,7 @@ export default function LoginPage() {
               <path d="M5 7l1.5 1.5L9 5.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span style={{ fontSize: 12, color: 'var(--ink-4)' }}>
-              GDPR aligned · Data stored in Norway · ISO 27001 in progress
+              {t('login_badge')}
             </span>
           </div>
         </div>

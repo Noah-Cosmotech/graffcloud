@@ -168,7 +168,7 @@ export default function UploadPage() {
 
   const sealHash = hashString(`${coords.lat},${coords.lon},${now.toISOString()},${photos.map(p => p.name).join(',')}`)
   const device = typeof navigator !== 'undefined' ? (navigator.userAgent.match(/\(([^)]+)\)/)?.[1] ?? 'Unknown') : 'Unknown'
-  const STAGES = ['Uploading', 'Sealing', 'Hashing', 'Done']
+  const STAGES = [t('stage_uploading'), t('stage_sealing'), t('stage_hashing'), t('stage_done')]
 
   // Stepper — shared between desktop nav and mobile stepper bar
   const stepperItems = [t('upload_photos'), t('upload_details'), t('upload_done')].map((label, i) => {
@@ -221,8 +221,8 @@ export default function UploadPage() {
           {/* ── Step 1: Photos ── */}
           {step === 1 && (
             <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 6 }}>Upload Photos</div>
-              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 28 }}>Drag and drop incident photos or take a new photo.</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 6 }}>{t('up1_title')}</div>
+              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 28 }}>{t('up1_sub')}</div>
 
               <div
                 onDragOver={e => { e.preventDefault(); setDragOver(true) }}
@@ -236,13 +236,13 @@ export default function UploadPage() {
                   transition: 'all 0.15s', marginBottom: 16,
                 }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🖼</div>
-                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--ink)', marginBottom: 6 }}>Drop photos here</div>
-                <div style={{ color: 'var(--ink-4)', fontSize: 13 }}>or click to browse — JPG, PNG, HEIC supported</div>
+                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--ink)', marginBottom: 6 }}>{t('up_drop_title')}</div>
+                <div style={{ color: 'var(--ink-4)', fontSize: 13 }}>{t('up_drop_sub')}</div>
                 <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => addFiles(e.target.files)} />
               </div>
 
               <button onClick={() => cameraInputRef.current?.click()} style={{ ...ghostBtn, marginBottom: 28 }}>
-                📷 Take Photo
+                📷 {t('up_take_photo')}
               </button>
               <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => addFiles(e.target.files)} />
 
@@ -261,23 +261,23 @@ export default function UploadPage() {
                 </div>
               )}
 
-              <button onClick={goStep2} style={primaryBtn}>Continue to Details →</button>
+              <button onClick={goStep2} style={primaryBtn}>{t('up_continue')}</button>
             </div>
           )}
 
           {/* ── Step 2: Details ── */}
           {step === 2 && (
             <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 6 }}>Incident Details</div>
-              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 28 }}>Fill in what happened. Location is auto-detected.</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 6 }}>{t('up2_title')}</div>
+              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 28 }}>{t('up2_sub')}</div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 520 }}>
 
                 {/* Property — free text with suggestions */}
-                <Field label="Property address *">
+                <Field label={t('up_field_property')}>
                   <input
                     type="text"
-                    placeholder="e.g. Karl Johans gate 25, Oslo"
+                    placeholder={t('up_property_placeholder')}
                     value={property}
                     onChange={e => setProperty(e.target.value)}
                     list="gc-property-list"
@@ -288,47 +288,47 @@ export default function UploadPage() {
                     {PROPERTY_SUGGESTIONS.map(p => <option key={p} value={p} />)}
                   </datalist>
                   <div style={{ fontSize: 12, color: 'var(--ink-5)', marginTop: 5 }}>
-                    Type any address. Common portfolio addresses appear as suggestions.
+                    {t('up_property_hint')}
                   </div>
                 </Field>
 
-                <Field label="Surface Type">
+                <Field label={t('up_field_surface')}>
                   <select value={surface} onChange={e => setSurface(e.target.value)} style={inputStyle}>
-                    {SURFACE_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {SURFACE_TYPES.map(s => <option key={s} value={s}>{t(('surface_' + s.toLowerCase()) as Parameters<typeof t>[0])}</option>)}
                   </select>
                 </Field>
 
-                <Field label="Date &amp; Time of Incident">
+                <Field label={t('up_field_datetime')}>
                   <input type="datetime-local" value={incidentDate} onChange={e => setIncidentDate(e.target.value)} style={inputStyle} />
                 </Field>
 
-                <Field label="Estimated Cost (NOK)">
-                  <input type="number" placeholder="e.g. 12 000" value={cost} onChange={e => setCost(e.target.value)} min={0} style={inputStyle} />
+                <Field label={t('up_field_cost')}>
+                  <input type="number" placeholder={t('up_cost_placeholder')} value={cost} onChange={e => setCost(e.target.value)} min={0} style={inputStyle} />
                 </Field>
 
                 <Field label="">
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                     <input type="checkbox" checked={cctv} onChange={e => setCctv(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--brand)' }} />
-                    <span style={{ fontSize: 14, color: 'var(--ink)' }}>CCTV footage available</span>
+                    <span style={{ fontSize: 14, color: 'var(--ink)' }}>{t('up_cctv')}</span>
                   </label>
                 </Field>
 
                 {/* GPS — real browser geolocation */}
-                <Field label="GPS Location">
+                <Field label={t('up_field_gps')}>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <div style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: `1px solid ${geoError ? 'var(--line-2)' : 'var(--line-2)'}`, borderRadius: 10, fontFamily: 'var(--font-mono)', fontSize: 12, color: geoError ? 'var(--ink-5)' : 'var(--ink-3)' }}>
-                      {geoLoading ? 'Detecting location…' : geoError ? 'Location unavailable — allow browser access' : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`}
+                      {geoLoading ? t('up_gps_detecting') : geoError ? t('up_gps_unavailable') : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`}
                       {!geoLoading && !geoError && coords.accuracy && (
                         <span style={{ color: 'var(--ink-5)', marginLeft: 8 }}>±{Math.round(coords.accuracy)}m</span>
                       )}
                     </div>
                     <button onClick={refreshGPS} disabled={geoLoading} style={{ ...ghostBtn, opacity: geoLoading ? 0.5 : 1 }}>
-                      {geoLoading ? '…' : 'Refresh'}
+                      {geoLoading ? '…' : t('up_gps_refresh')}
                     </button>
                   </div>
                   {geoError && (
                     <div style={{ fontSize: 12, color: 'var(--ink-5)', marginTop: 5 }}>
-                      Enable location in your browser settings to get real GPS coordinates.
+                      {t('up_gps_hint')}
                     </div>
                   )}
                 </Field>
@@ -338,8 +338,8 @@ export default function UploadPage() {
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: postBounty ? 14 : 0 }}>
                     <input type="checkbox" checked={postBounty} onChange={e => setPostBounty(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--brand)' }} />
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Post a bounty reward</div>
-                      <div style={{ fontSize: 12, color: 'var(--ink-4)' }}>Offer NOK reward for identification of the perpetrator</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{t('up_bounty_title')}</div>
+                      <div style={{ fontSize: 12, color: 'var(--ink-4)' }}>{t('up_bounty_sub')}</div>
                     </div>
                   </label>
                   {postBounty && (
@@ -357,7 +357,7 @@ export default function UploadPage() {
                     </div>
                   )}
                   {postBounty && bountyAmount && Number(bountyAmount) < 1000 && (
-                    <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 6 }}>Minimum bounty is NOK 1,000</div>
+                    <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 6 }}>{t('up_bounty_min')}</div>
                   )}
                 </div>
 
@@ -370,7 +370,7 @@ export default function UploadPage() {
                   disabled={submitting}
                   style={{ ...primaryBtn, opacity: submitting ? 0.6 : 1, cursor: submitting ? 'not-allowed' : 'pointer' }}
                 >
-                  {submitting ? 'Submitting…' : 'Submit Incident →'}
+                  {submitting ? t('up_submitting') : t('up_submit')}
                 </button>
               </div>
             </div>
@@ -382,11 +382,11 @@ export default function UploadPage() {
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: '50%', background: 'rgba(0,200,100,0.12)', marginBottom: 24 }}>
                 <div style={{ fontSize: 40 }}>✓</div>
               </div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 38, marginBottom: 8 }}>Incident Reported</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 38, marginBottom: 8 }}>{t('up3_title')}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: 'var(--brand)', marginBottom: 8 }}>
-                {incidentDisplayId ?? 'Saving…'}
+                {incidentDisplayId ?? t('up3_saving')}
               </div>
-              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 40 }}>Your report has been securely sealed and submitted to the GraffCloud platform.</div>
+              <div style={{ color: 'var(--ink-4)', fontSize: 14, marginBottom: 40 }}>{t('up3_sub')}</div>
 
               {/* Upload stages */}
               <div style={{ display: 'flex', gap: 0, justifyContent: 'center', marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
@@ -408,22 +408,22 @@ export default function UploadPage() {
 
               <div style={{ background: 'rgba(148,0,20,0.05)', border: '1px solid rgba(148,0,20,0.18)', borderRadius: 14, padding: '20px 24px', maxWidth: 400, margin: '0 auto 32px', textAlign: 'left', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 10, right: 12, fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.08em', color: 'var(--ink-5)', background: 'var(--surface)', padding: '2px 6px', borderRadius: 4 }}>SAMPLE</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--brand)', letterSpacing: '0.1em', marginBottom: 12 }}>AI MATCH — PILOT PREVIEW</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--brand)', letterSpacing: '0.1em', marginBottom: 12 }}>{t('up_ai_preview')}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--brand)' }}>K4Z3</div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 15 }}>92% confidence</div>
-                    <div style={{ fontSize: 13, color: 'var(--ink-4)' }}>74 prior incidents across 9 cities</div>
+                    <div style={{ fontWeight: 600, fontSize: 15 }}>{t('up_ai_confidence')}</div>
+                    <div style={{ fontSize: 13, color: 'var(--ink-4)' }}>{t('up_ai_prior')}</div>
                   </div>
                 </div>
                 <div style={{ marginTop: 12, fontSize: 11, color: 'var(--ink-5)', lineHeight: 1.5 }}>
-                  Crew matching uses sample data during the pilot. Real signature matching activates once your portfolio reaches 25 sealed incidents.
+                  {t('up_ai_sample_note')}
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {incidentDisplayId && (
-                  <Link href="/intelligence" style={{ ...primaryBtn as React.CSSProperties, textDecoration: 'none' }}>View Trail Map →</Link>
+                  <Link href="/intelligence" style={{ ...primaryBtn as React.CSSProperties, textDecoration: 'none' }}>{t('up_view_trail')}</Link>
                 )}
                 <button
                   onClick={() => {
@@ -432,7 +432,7 @@ export default function UploadPage() {
                   }}
                   style={ghostBtn}
                 >
-                  Report Another
+                  {t('up_report_another')}
                 </button>
               </div>
             </div>
@@ -445,7 +445,7 @@ export default function UploadPage() {
 
             {/* AI Matches */}
             <div style={{ marginBottom: 28 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-4)', marginBottom: 14 }}>AI SIGNATURE MATCH</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-4)', marginBottom: 14 }}>{t('up_ai_panel')}</div>
               {AI_MATCHES.map((m, i) => (
                 <div key={m.code} onClick={() => setSelectedMatch(i)} style={{
                   padding: '12px 14px', borderRadius: 10, marginBottom: 8, cursor: 'pointer',
@@ -461,7 +461,7 @@ export default function UploadPage() {
                   <div style={{ width: '100%', height: 4, background: 'var(--line)', borderRadius: 99 }}>
                     <div style={{ width: `${m.confidence}%`, height: '100%', background: m.color, borderRadius: 99, transition: 'width 0.4s' }} />
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-5)', marginTop: 6 }}>{m.incidents} prior incidents</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-5)', marginTop: 6 }}>{m.incidents} {t('up_prior_incidents')}</div>
                 </div>
               ))}
             </div>
@@ -471,13 +471,13 @@ export default function UploadPage() {
               <div style={{ background: 'var(--ink)', borderRadius: 14, padding: 18, color: '#fff' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ef09a' }} />
-                  LIVE EVIDENCE SEAL
+                  {t('up_seal_live')}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <SealRow label="GPS" value={geoError ? 'Permission denied' : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`} />
-                  <SealRow label="Timestamp" value={formatTime(now)} highlight />
-                  <SealRow label="Device" value={device.slice(0, 30)} />
-                  <SealRow label="Photos" value={`${photos.length} file${photos.length !== 1 ? 's' : ''}`} />
+                  <SealRow label="GPS" value={geoError ? t('up_seal_denied') : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`} />
+                  <SealRow label={t('up_seal_ts')} value={formatTime(now)} highlight />
+                  <SealRow label={t('up_seal_device')} value={device.slice(0, 30)} />
+                  <SealRow label={t('up_seal_photos')} value={`${photos.length} file${photos.length !== 1 ? 's' : ''}`} />
                   <div style={{ marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 6, letterSpacing: '0.08em' }}>SHA-256</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,200,80,0.8)', wordBreak: 'break-all', lineHeight: 1.5 }}>{sealHash}</div>
@@ -489,9 +489,9 @@ export default function UploadPage() {
             {step === 1 && (
               <div style={{ background: 'rgba(10,10,10,0.04)', borderRadius: 14, padding: 18, textAlign: 'center' }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>🔒</div>
-                <div style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 500, marginBottom: 6 }}>Evidence Seal</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 500, marginBottom: 6 }}>{t('up_seal_title')}</div>
                 <div style={{ fontSize: 12, color: 'var(--ink-5)', lineHeight: 1.5 }}>
-                  Upload photos to generate a cryptographic evidence seal with GPS, timestamp, and device fingerprint.
+                  {t('up_seal_hint')}
                 </div>
               </div>
             )}

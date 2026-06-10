@@ -82,11 +82,11 @@ const HEATMAP_DOTS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getGreeting(): string {
+function getGreetingKey(): 'greet_morning' | 'greet_afternoon' | 'greet_evening' {
   const hour = new Date().getHours()
-  if (hour >= 5 && hour <= 11) return 'Good morning'
-  if (hour >= 12 && hour <= 17) return 'Good afternoon'
-  return 'Good evening'
+  if (hour >= 5 && hour <= 11) return 'greet_morning'
+  if (hour >= 12 && hour <= 17) return 'greet_afternoon'
+  return 'greet_evening'
 }
 
 // ─── Display model types (shared by demo and live data) ───────────────────────
@@ -461,6 +461,7 @@ function DrawerField({ label, value, mono, children }: { label: string; value?: 
 // ─── Oslo Heatmap SVG ─────────────────────────────────────────────────────────
 
 function OsloHeatmap({ dots }: { dots: typeof HEATMAP_DOTS }) {
+  const { t } = useI18n()
   return (
     <div style={{ background: '#111', borderRadius: 'var(--r-lg)', padding: 20, height: 260, position: 'relative' }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Oslo — incident heatmap</div>
@@ -469,7 +470,7 @@ function OsloHeatmap({ dots }: { dots: typeof HEATMAP_DOTS }) {
           position: 'absolute', inset: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'rgba(255,255,255,0.35)', fontSize: 12, textAlign: 'center', padding: '0 20px',
         }}>
-          Heatmap appears once you've reported incidents.
+          {t('dash_heatmap_empty')}
         </div>
       )}
       <svg viewBox="0 0 100 80" width="100%" height="100%" style={{ display: 'block' }}>
@@ -763,18 +764,18 @@ export default function DashboardPage() {
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {profile?.name ?? (authConfigured ? 'Loading…' : 'Pilot user')}
+                {profile?.name ?? (authConfigured ? t('dash_loading') : t('dash_pilot_user'))}
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {profile?.org ?? profile?.email ?? 'Sign in to load profile'}
+                {profile?.org ?? profile?.email ?? t('dash_signin_profile')}
               </div>
             </div>
             {profile && (
               <form action="/api/auth/signout" method="POST" style={{ margin: 0 }}>
                 <button
                   type="submit"
-                  aria-label="Sign out"
-                  title="Sign out"
+                  aria-label={t('dash_signout')}
+                  title={t('dash_signout')}
                   style={{
                     background: 'transparent',
                     border: 0,
@@ -825,14 +826,14 @@ export default function DashboardPage() {
         }}>
           <div style={{ flex: 1 }}>
             <h1 style={{ margin: 0, fontSize: 20, fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
-              {getGreeting()}{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
+              {t(getGreetingKey())}{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
             </h1>
             <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--ink-4)' }}>{t('dash_sub')}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
               onClick={toggleDemo}
-              title={showDemo ? 'Hide sample portfolio' : 'Show sample portfolio'}
+              title={showDemo ? t('dash_demo_hide') : t('dash_demo_show')}
               style={{
                 fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.06em',
                 textTransform: 'uppercase', padding: '6px 10px',
@@ -846,7 +847,7 @@ export default function DashboardPage() {
               }}
             >
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: showDemo ? 'var(--amber-ink)' : 'var(--ink-5)' }} />
-              {showDemo ? 'Demo on' : 'Demo off'}
+              {showDemo ? t('dash_demo_on') : t('dash_demo_off')}
             </button>
             <LangToggle />
             <button
@@ -939,14 +940,14 @@ export default function DashboardPage() {
                 disabled={incidents.length === 0}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, border: '1px solid var(--line-2)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--ink-3)' }}
               >
-                <IconExport /> Export
+                <IconExport /> {t('dash_export')}
               </button>
             </div>
             <div className="r-scroll-x">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'var(--bg)' }}>
-                  {['Incident', 'Address', 'Signature', 'Cost', 'Status'].map(h => (
+                  {[t('th_incident'), t('th_address'), t('th_signature'), t('th_cost'), t('th_status')].map(h => (
                     <th key={h} style={{ padding: '10px 22px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--ink-5)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--line)' }}>{h}</th>
                   ))}
                 </tr>
@@ -955,8 +956,8 @@ export default function DashboardPage() {
                 {incidents.length === 0 && (
                   <tr>
                     <td colSpan={5} style={{ padding: '40px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
-                      No incidents reported yet.{' '}
-                      <Link href="/upload" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>Upload your first photo →</Link>
+                      {t('dash_no_incidents')}{' '}
+                      <Link href="/upload" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{t('dash_upload_first')}</Link>
                     </td>
                   </tr>
                 )}
@@ -1009,9 +1010,9 @@ export default function DashboardPage() {
               <div style={{ padding: '8px 0' }}>
                 {properties.length === 0 && (
                   <div style={{ padding: '32px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
-                    No properties added yet.
+                    {t('dash_no_properties')}
                     <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ink-5)' }}>
-                      Properties appear here once you upload incidents tied to an address.
+                      {t('dash_properties_hint')}
                     </div>
                   </div>
                 )}
@@ -1061,13 +1062,13 @@ export default function DashboardPage() {
                   onClick={() => setAlertsRead(true)}
                   style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink-4)', border: 0, background: 'transparent', cursor: 'pointer', padding: '4px 8px' }}
                 >
-                  Mark all read
+                  {t('dash_mark_read')}
                 </button>
               </div>
               <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {alerts.length === 0 && (
                   <div style={{ padding: '24px 14px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
-                    No active alerts.
+                    {t('dash_no_alerts')}
                   </div>
                 )}
                 {alerts.map((alert, i) => (
@@ -1098,13 +1099,13 @@ export default function DashboardPage() {
             {/* Open Bounties */}
             <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-1)', border: '1px solid var(--line)', overflow: 'hidden' }}>
               <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--line)' }}>
-                <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Open Bounties</h2>
+                <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{t('dash_open_bounties')}</h2>
               </div>
               <div style={{ padding: '8px 0' }}>
                 {bounties.length === 0 && (
                   <div style={{ padding: '32px 22px', textAlign: 'center', color: 'var(--ink-4)', fontSize: 13 }}>
-                    No open bounties.{' '}
-                    <Link href="/bounty" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>Post one →</Link>
+                    {t('dash_no_bounties')}{' '}
+                    <Link href="/bounty" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{t('dash_post_one')}</Link>
                   </div>
                 )}
                 {bounties.map((bounty, i) => (
