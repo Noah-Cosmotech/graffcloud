@@ -364,7 +364,7 @@ body {
 
 /* ── HERO RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .gc-hero-right { display: none !important; }
+  .gc-hero-right { min-height: 340px !important; }
   .gc-hero-grid { grid-template-columns: 1fr !important; }
   .gc-metrics-bar { padding: 28px 20px !important; }
   .gc-metrics-bar > div { border-right: none !important; padding: 8px 16px !important; }

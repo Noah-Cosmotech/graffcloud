@@ -1,98 +1,239 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { useI18n } from '@/components/I18nProvider'
 
-/* ─── Globe SVG ─────────────────────────────────────────────────── */
-function HeroGlobe() {
-  // Orthographic projection: lat0=52°N, lon0=8°E, R=280, SVG center=(220,175)
-  // Cities follow the K4Z3 trail: Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona
+/* ─── Interactive pilot globe (canvas) ──────────────────────────── */
+const PILOT_CITIES = [
+  { name: 'Oslo',      lat: 59.91, lon: 10.75, r: 5,   factKey: 'globe_fact_oslo' },
+  { name: 'Bergen',    lat: 60.39, lon: 5.32,  r: 4,   factKey: 'globe_fact_bergen' },
+  { name: 'Trondheim', lat: 63.43, lon: 10.40, r: 4,   factKey: 'globe_fact_trondheim' },
+  { name: 'Stavanger', lat: 58.97, lon: 5.73,  r: 4,   factKey: 'globe_fact_stavanger' },
+] as const
+
+const GLOBE_LINKS: [number, number][] = [[0, 1], [0, 2], [0, 3], [1, 3]]
+
+function toRad(deg: number) { return (deg * Math.PI) / 180 }
+
+function latLonToXYZ(lat: number, lon: number): [number, number, number] {
+  const φ = toRad(lat); const λ = toRad(lon)
+  return [Math.cos(φ) * Math.cos(λ), Math.sin(φ), Math.cos(φ) * Math.sin(λ)]
+}
+
+function rotY(x: number, y: number, z: number, a: number): [number, number, number] {
+  const c = Math.cos(a); const sn = Math.sin(a)
+  return [c * x + sn * z, y, -sn * x + c * z]
+}
+
+// Rotation that puts ~8°E (southern Norway) facing the viewer
+const GLOBE_HOME = toRad(8) - Math.PI / 2
+
+function PilotGlobe({ selected, onSelect }: { selected: number; onSelect: (i: number) => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rotRef = useRef({ rot: GLOBE_HOME, dragging: false, lastX: 0, moved: 0, idleT: 0 })
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    let raf = 0
+    const cityPx: { x: number; y: number; front: boolean }[] = PILOT_CITIES.map(() => ({ x: 0, y: 0, front: false }))
+    ;(canvas as HTMLCanvasElement & { __cityPx?: typeof cityPx }).__cityPx = cityPx
+
+    function draw(t: number) {
+      const c = canvasRef.current
+      if (!c || !ctx) return
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const W = c.clientWidth; const H = c.clientHeight
+      if (c.width !== W * dpr || c.height !== H * dpr) {
+        c.width = W * dpr; c.height = H * dpr
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, W, H)
+
+      const st = rotRef.current
+      // Gentle sway around Norway when idle, so the pilot cities stay in focus
+      if (!st.dragging) {
+        st.idleT += 1
+        const target = GLOBE_HOME + Math.sin(st.idleT * 0.004) * 0.22
+        st.rot += (target - st.rot) * 0.02
+      }
+      const rot = st.rot
+
+      const cx = W / 2; const cy = H / 2 + 6
+      const R = Math.min(W, H) * 0.40
+
+      // Sphere outline + graticule
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+      ctx.lineWidth = 1
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke()
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+      for (const ry of [0.33, 0.62, 0.86]) {
+        ctx.beginPath(); ctx.ellipse(cx, cy, R, R * ry, 0, 0, Math.PI * 2); ctx.stroke()
+      }
+      // Meridians (rotate with globe)
+      for (let m = 0; m < 6; m++) {
+        const lonM = (m * 60)
+        ctx.beginPath()
+        let started = false
+        for (let la = -85; la <= 85; la += 5) {
+          const [x0, y0, z0] = latLonToXYZ(la, lonM)
+          const [rx, ryy, rz] = rotY(x0, y0, z0, rot)
+          if (rz < 0) { started = false; continue }
+          const sx = cx + rx * R; const sy = cy - ryy * R
+          if (!started) { ctx.moveTo(sx, sy); started = true } else ctx.lineTo(sx, sy)
+        }
+        ctx.stroke()
+      }
+
+      // Surface dots
+      const N = 700
+      const golden = Math.PI * (3 - Math.sqrt(5))
+      ctx.fillStyle = 'rgba(255,255,255,0.28)'
+      for (let i = 0; i < N; i++) {
+        const y0 = 1 - (i / (N - 1)) * 2
+        const rad = Math.sqrt(1 - y0 * y0)
+        const th = golden * i
+        const [rx, ryy, rz] = rotY(Math.cos(th) * rad, y0, Math.sin(th) * rad, rot)
+        if (rz < 0) continue
+        ctx.beginPath()
+        ctx.arc(cx + rx * R, cy - ryy * R, 0.9, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Project cities
+      PILOT_CITIES.forEach((city, i) => {
+        const [x0, y0, z0] = latLonToXYZ(city.lat, city.lon)
+        const [rx, ryy, rz] = rotY(x0, y0, z0, rot)
+        cityPx[i] = { x: cx + rx * R, y: cy - ryy * R, front: rz > 0 }
+      })
+
+      // Pilot network arcs (slerp great circles)
+      for (const [ai, bi] of GLOBE_LINKS) {
+        const a = PILOT_CITIES[ai]; const b = PILOT_CITIES[bi]
+        const [ax, ay, az] = latLonToXYZ(a.lat, a.lon)
+        const [bx, by, bz] = latLonToXYZ(b.lat, b.lon)
+        const dot = Math.max(-1, Math.min(1, ax * bx + ay * by + az * bz))
+        const om = Math.acos(dot)
+        ctx.beginPath()
+        let started = false
+        const steps = 24
+        for (let k = 0; k <= steps; k++) {
+          const f = k / steps
+          let x0: number; let y0: number; let z0: number
+          if (om < 0.001) { x0 = ax; y0 = ay; z0 = az } else {
+            const sO = Math.sin(om)
+            const fa = Math.sin((1 - f) * om) / sO
+            const fb = Math.sin(f * om) / sO
+            x0 = fa * ax + fb * bx; y0 = fa * ay + fb * by; z0 = fa * az + fb * bz
+            const len = Math.hypot(x0, y0, z0); x0 /= len; y0 /= len; z0 /= len
+          }
+          const [rx, ryy, rz] = rotY(x0, y0, z0, rot)
+          if (rz < 0) { started = false; continue }
+          // Lift the arc slightly off the surface
+          const lift = 1 + Math.sin(f * Math.PI) * 0.04
+          const sx = cx + rx * R * lift; const sy = cy - ryy * R * lift
+          if (!started) { ctx.moveTo(sx, sy); started = true } else ctx.lineTo(sx, sy)
+        }
+        ctx.strokeStyle = 'rgba(229,72,92,0.45)'
+        ctx.lineWidth = 1.2
+        ctx.setLineDash([4, 3])
+        ctx.stroke()
+        ctx.setLineDash([])
+      }
+
+      // City markers + labels
+      const pulse = (Math.sin(t * 0.003) + 1) / 2
+      PILOT_CITIES.forEach((city, i) => {
+        const p = cityPx[i]
+        if (!p.front) return
+        const isSel = i === selected
+        // Halo
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, city.r + 5 + pulse * 4, 0, Math.PI * 2)
+        ctx.fillStyle = isSel ? 'rgba(229,72,92,0.28)' : 'rgba(229,72,92,0.12)'
+        ctx.fill()
+        // Dot
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, isSel ? city.r + 1 : city.r, 0, Math.PI * 2)
+        ctx.fillStyle = '#E5485C'
+        ctx.fill()
+        // Label
+        ctx.font = `${isSel ? 600 : 400} 11px ui-monospace, monospace`
+        ctx.fillStyle = isSel ? '#ffffff' : 'rgba(255,255,255,0.65)'
+        const lx = city.name === 'Bergen' || city.name === 'Stavanger' ? p.x - ctx.measureText(city.name).width - 10 : p.x + 9
+        ctx.fillText(city.name, lx, p.y + 4)
+      })
+
+      raf = requestAnimationFrame(draw)
+    }
+    raf = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(raf)
+  }, [selected])
+
+  function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    const st = rotRef.current
+    st.dragging = true; st.lastX = e.clientX; st.moved = 0
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    const st = rotRef.current
+    if (!st.dragging) return
+    const dx = e.clientX - st.lastX
+    st.lastX = e.clientX
+    st.moved += Math.abs(dx)
+    st.rot += dx * 0.006
+  }
+  function onPointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
+    const st = rotRef.current
+    st.dragging = false
+    st.idleT = 0
+    if (st.moved < 6) {
+      // Treat as a tap — hit-test the pilot cities
+      const rect = e.currentTarget.getBoundingClientRect()
+      const px = e.clientX - rect.left; const py = e.clientY - rect.top
+      const cityPx = (e.currentTarget as HTMLCanvasElement & { __cityPx?: { x: number; y: number; front: boolean }[] }).__cityPx
+      if (cityPx) {
+        let best = -1; let bestD = 22
+        cityPx.forEach((p, i) => {
+          if (!p.front) return
+          const d = Math.hypot(p.x - px, p.y - py)
+          if (d < bestD) { bestD = d; best = i }
+        })
+        if (best >= 0) onSelect(best)
+      }
+    }
+  }
+
   return (
-    <svg viewBox="0 0 400 360" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-      {/* Globe sphere */}
-      <circle cx="200" cy="180" r="148" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-      <circle cx="200" cy="180" r="108" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-      <ellipse cx="200" cy="180" rx="148" ry="49" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-      <ellipse cx="200" cy="180" rx="148" ry="95" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-      <path d="M200 32 Q246 180 200 328" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
-      <path d="M200 32 Q154 180 200 328" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
-      <path d="M200 32 Q290 180 200 328" stroke="rgba(255,255,255,0.03)" strokeWidth="1" fill="none" />
-      <path d="M200 32 Q110 180 200 328" stroke="rgba(255,255,255,0.03)" strokeWidth="1" fill="none" />
-
-      {/* Trail arcs — K4Z3 route (Oslo→Bergen→Trondheim→Göteborg→Copenhagen→Hamburg→Amsterdam→Barcelona) */}
-      {/* Oslo→Bergen */}
-      <path d="M227 137 Q226 124 214 134" stroke="rgba(251,191,36,0.55)" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
-      {/* Bergen→Trondheim */}
-      <path d="M214 134 Q224 113 225 119" stroke="rgba(251,191,36,0.5)" strokeWidth="1.4" fill="none" strokeDasharray="4 3" />
-      {/* Trondheim→Göteborg */}
-      <path d="M225 119 Q236 121 231 147" stroke="rgba(251,191,36,0.45)" strokeWidth="1.3" fill="none" strokeDasharray="4 3" />
-      {/* Göteborg→Copenhagen */}
-      <path d="M231 147 Q241 145 233 157" stroke="rgba(251,191,36,0.4)" strokeWidth="1.2" fill="none" strokeDasharray="4 3" />
-      {/* Copenhagen→Hamburg */}
-      <path d="M233 157 Q238 158 226 168" stroke="rgba(251,191,36,0.35)" strokeWidth="1.1" fill="none" strokeDasharray="4 3" />
-      {/* Hamburg→Amsterdam */}
-      <path d="M226 168 Q224 168 211 172" stroke="rgba(251,191,36,0.3)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
-      {/* Amsterdam→Barcelona */}
-      <path d="M211 172 Q206 204 199 226" stroke="rgba(251,191,36,0.5)" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
-
-      {/* Secondary node: Reykjavík */}
-      <circle cx="159" cy="103" r="2.5" fill="rgba(255,255,255,0.25)" />
-      <text x="113" y="101" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="monospace">Reykjavík</text>
-
-      {/* Trondheim — northernmost primary */}
-      <circle cx="225" cy="119" r="4" fill="var(--brand-bright)" opacity="0.85" />
-      <circle cx="225" cy="119" r="8" fill="var(--brand-bright)" opacity="0.15" />
-      <text x="230" y="116" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Trondheim</text>
-
-      {/* Bergen */}
-      <circle cx="214" cy="134" r="3.5" fill="var(--brand-bright)" />
-      <circle cx="214" cy="134" r="8" fill="var(--brand-bright)" opacity="0.15" />
-      <text x="172" y="131" fill="rgba(255,255,255,0.7)" fontSize="9" fontFamily="monospace">Bergen</text>
-
-      {/* Oslo — primary hub */}
-      <circle cx="227" cy="137" r="6" fill="var(--brand-bright)" />
-      <circle cx="227" cy="137" r="13" fill="var(--brand-bright)" opacity="0.2" />
-      <circle cx="227" cy="137" r="20" fill="var(--brand-bright)" opacity="0.07" />
-      <text x="237" y="133" fill="white" fontSize="11" fontFamily="monospace" fontWeight="600">Oslo</text>
-
-      {/* Göteborg */}
-      <circle cx="231" cy="147" r="3" fill="var(--brand-bright)" opacity="0.7" />
-      <text x="237" y="144" fill="rgba(255,255,255,0.55)" fontSize="9" fontFamily="monospace">Göteborg</text>
-
-      {/* Copenhagen */}
-      <circle cx="233" cy="157" r="3.5" fill="var(--brand-bright)" opacity="0.75" />
-      <circle cx="233" cy="157" r="8" fill="var(--brand-bright)" opacity="0.12" />
-      <text x="239" y="154" fill="rgba(255,255,255,0.65)" fontSize="9" fontFamily="monospace">Copenhagen</text>
-
-      {/* Hamburg */}
-      <circle cx="226" cy="168" r="3" fill="rgba(255,255,255,0.45)" />
-      <text x="231" y="165" fill="rgba(255,255,255,0.45)" fontSize="9" fontFamily="monospace">Hamburg</text>
-
-      {/* Amsterdam */}
-      <circle cx="211" cy="172" r="3" fill="rgba(255,255,255,0.4)" />
-      <text x="165" y="169" fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="monospace">Amsterdam</text>
-
-      {/* Barcelona — southern terminus */}
-      <circle cx="199" cy="226" r="5" fill="var(--brand-bright)" opacity="0.9" />
-      <circle cx="199" cy="226" r="11" fill="var(--brand-bright)" opacity="0.18" />
-      <text x="207" y="222" fill="rgba(255,255,255,0.8)" fontSize="10" fontFamily="monospace">Barcelona</text>
-    </svg>
+    <canvas
+      ref={canvasRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab', touchAction: 'pan-y' }}
+    />
   )
 }
 
-/* ─── Risk score chart SVG ──────────────────────────────────────── */
-function RiskChart() {
-  const points = [
-    [0, 70], [40, 65], [80, 72], [120, 58], [160, 50], [200, 55],
-    [240, 42], [280, 38], [320, 32], [360, 28],
+/* ─── Property damage index chart (Oslo Police District) ────────── */
+function DamageIndexChart() {
+  // Index: pre-pandemic average = 100 → 2024 ≈ 128 → 2025 (H1 annualised) ≈ 118
+  // Derived from Oslo PD "Anmeldt kriminalitet 1. halvår 2025": −8% vs 2024, +18% vs pre-pandemic
+  const series: { x: number; y: number; v: number; label: string }[] = [
+    { x: 10,  y: 72, v: 100, label: '2019*' },
+    { x: 185, y: 24, v: 128, label: '2024' },
+    { x: 350, y: 41, v: 118, label: '2025*' },
   ]
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ')
-  const areaD = pathD + ' L360,100 L0,100 Z'
+  const pathD = series.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+  const areaD = pathD + ' L350,100 L10,100 Z'
 
   return (
-    <svg viewBox="0 0 360 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 100 }}>
+    <svg viewBox="0 0 360 112" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 112 }}>
       <defs>
         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="var(--brand-bright)" stopOpacity="0.25" />
@@ -101,15 +242,17 @@ function RiskChart() {
       </defs>
       <path d={areaD} fill="url(#chartGrad)" />
       <path d={pathD} stroke="var(--brand-bright)" strokeWidth="2" fill="none" strokeLinejoin="round" />
-      {points.map(([x, y], i) => i % 2 === 0 && (
-        <circle key={i} cx={x} cy={y} r="3" fill="var(--brand-bright)" />
+      {series.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r="3.5" fill="var(--brand-bright)" />
+          <text x={p.x} y={p.y - 9} fill="rgba(255,255,255,0.85)" fontSize="10" fontFamily="monospace" textAnchor={i === 0 ? 'start' : i === series.length - 1 ? 'end' : 'middle'}>
+            {p.v}
+          </text>
+          <text x={p.x} y={108} fill="rgba(255,255,255,0.35)" fontSize="8" fontFamily="monospace" textAnchor={i === 0 ? 'start' : i === series.length - 1 ? 'end' : 'middle'}>
+            {p.label}
+          </text>
+        </g>
       ))}
-      {/* X axis labels */}
-      <text x="0" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">Jan</text>
-      <text x="80" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">Mar</text>
-      <text x="160" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">May</text>
-      <text x="240" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">Jul</text>
-      <text x="320" y="98" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">Sep</text>
     </svg>
   )
 }
@@ -165,6 +308,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /* ─── Main page ─────────────────────────────────────────────────── */
 export default function LandingPage() {
   const { t } = useI18n()
+  const [selectedCity, setSelectedCity] = useState(0)
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100dvh' }}>
@@ -215,7 +359,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Right column — dark globe card */}
+          {/* Right column — interactive pilot globe */}
           <div className="gc-hero-right" style={{
             background: 'var(--ink)',
             borderRadius: 'var(--r-xl)',
@@ -224,32 +368,43 @@ export default function LandingPage() {
             overflow: 'hidden',
             minHeight: 380,
           }}>
-            <HeroGlobe />
+            <PilotGlobe selected={selectedCity} onSelect={setSelectedCity} />
 
-            {/* Floating stat chips */}
+            {/* Drag hint */}
+            <div style={{
+              position: 'absolute', top: 24, left: 24, pointerEvents: 'none',
+              fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.1em',
+              color: 'rgba(255,255,255,0.35)',
+            }}>
+              {t('globe_drag').toUpperCase()}
+            </div>
+
+            {/* Pilot badge */}
             <div style={{
               position: 'absolute',
-              top: 28,
-              right: 28,
+              top: 24,
+              right: 24,
               background: 'rgba(255,255,255,0.08)',
               backdropFilter: 'blur(8px)',
               borderRadius: 'var(--r-md)',
               padding: '10px 16px',
               border: '1px solid rgba(255,255,255,0.1)',
+              pointerEvents: 'none',
             }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginBottom: 4 }}>
-                ACTIVE NOW
+                {t('globe_pilot_label')}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 20, color: '#fff', fontWeight: 600 }}>
-                41,842
+                {t('globe_pilot_cities')}
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>incidents indexed</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Oslo · Bergen · Trondheim · Stavanger</div>
             </div>
 
+            {/* Selected city fact */}
             <div style={{
               position: 'absolute',
-              bottom: 28,
-              left: 28,
+              bottom: 24,
+              left: 24,
               background: 'rgba(255,255,255,0.07)',
               backdropFilter: 'blur(8px)',
               borderRadius: 'var(--r-md)',
@@ -258,30 +413,38 @@ export default function LandingPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              pointerEvents: 'none',
+              maxWidth: '60%',
             }}>
               <span style={{
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                background: 'oklch(0.72 0.11 150)',
+                background: 'var(--brand-bright)',
                 display: 'inline-block',
-                boxShadow: '0 0 0 3px rgba(116,200,146,0.25)',
+                boxShadow: '0 0 0 3px rgba(229,72,92,0.25)',
+                flexShrink: 0,
               }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>
-                K4Z3 · 9 cities · live
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                {PILOT_CITIES[selectedCity].name} — {t(PILOT_CITIES[selectedCity].factKey)}
               </span>
             </div>
 
+            {/* Real stat chip */}
             <div style={{
               position: 'absolute',
-              bottom: 28,
-              right: 28,
+              bottom: 24,
+              right: 24,
               background: 'var(--brand)',
               borderRadius: 'var(--r-md)',
               padding: '8px 14px',
+              pointerEvents: 'none',
             }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: '#fff' }}>
-                92% match
+                {t('globe_chip_stat')}
+              </div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>
+                {t('globe_chip_stat_sub')}
               </div>
             </div>
           </div>
@@ -292,10 +455,10 @@ export default function LandingPage() {
       <section className="gc-metrics-bar" style={{ background: 'var(--ink)', padding: '40px clamp(16px,5vw,40px)' }}>
         <div className="r-grid-4" style={{ maxWidth: 1280, margin: '0 auto', gap: 0 }}>
           {[
-            { num: '41,842', label: t('metric_incidents') },
-            { num: '9+', label: t('metric_cities') },
-            { num: '67%', label: t('metric_recovery') },
-            { num: '3.1×', label: t('metric_clearance') },
+            { num: t('metric1_num'), label: t('metric1_label') },
+            { num: t('metric2_num'), label: t('metric2_label') },
+            { num: t('metric3_num'), label: t('metric3_label') },
+            { num: t('metric4_num'), label: t('metric4_label') },
           ].map((m, i) => (
             <div key={i} style={{
               padding: '8px 32px',
@@ -304,10 +467,11 @@ export default function LandingPage() {
             }}>
               <div style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 42,
+                fontSize: 'clamp(26px, 2.6vw, 38px)',
                 color: 'var(--brand-bright)',
                 lineHeight: 1,
                 marginBottom: 8,
+                whiteSpace: 'nowrap',
               }}>
                 {m.num}
               </div>
@@ -316,6 +480,15 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+        <div style={{ maxWidth: 1280, margin: '20px auto 0', textAlign: 'center' }}>
+          <a
+            href="https://www.ssb.no/sosiale-forhold-og-kriminalitet/kriminalitet-og-rettsvesen/statistikk/anmeldte-lovbrudd-og-ofre"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}
+          >
+            {t('metrics_sources')} ↗
+          </a>
         </div>
       </section>
 
@@ -667,27 +840,30 @@ export default function LandingPage() {
           }}>
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em', marginBottom: 6 }}>
-                RISK SCORE · PORTFOLIO AGGREGATE
+                {t('ins_chart_label')}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, color: 'var(--brand-bright)' }}>
-                  −22%
+                  {t('ins_chart_num')}
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                  claim cost density, Oslo pilots
+                  {t('ins_chart_sub')}
                 </div>
               </div>
             </div>
-            <RiskChart />
+            <DamageIndexChart />
+            <div style={{ marginTop: 8, fontSize: 9.5, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)', letterSpacing: '0.03em' }}>
+              {t('ins_chart_note')}
+            </div>
             <div style={{ marginTop: 20, display: 'flex', gap: 16 }}>
               {[
-                { label: 'High risk assets', val: '14' },
-                { label: 'Avg risk score', val: '3.2' },
-                { label: 'Claims prevented', val: '82' },
+                { val: t('ins_stat1_val'), label: t('ins_stat1_label') },
+                { val: t('ins_stat2_val'), label: t('ins_stat2_label') },
+                { val: t('ins_stat3_val'), label: t('ins_stat3_label') },
               ].map((s, i) => (
                 <div key={i} style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#fff', marginBottom: 4 }}>{s.val}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>{s.label}</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 15, color: '#fff', marginBottom: 4, whiteSpace: 'nowrap' }}>{s.val}</div>
+                  <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.45)', lineHeight: 1.45 }}>{s.label}</div>
                 </div>
               ))}
             </div>
