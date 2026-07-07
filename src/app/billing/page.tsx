@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Nav } from '@/components/Nav'
 import { ToastContainer, showToast } from '@/components/Toast'
 import { useI18n } from '@/components/I18nProvider'
@@ -90,8 +91,19 @@ function openPrintInvoice(inv: typeof INVOICES[0]) {
   win.document.close()
 }
 
+const VALID_PLANS: PlanKey[] = ['starter', 'pro', 'enterprise']
+
 export default function BillingPage() {
+  return (
+    <Suspense fallback={null}>
+      <BillingInner />
+    </Suspense>
+  )
+}
+
+function BillingInner() {
   const { t } = useI18n()
+  const searchParams = useSearchParams()
   const [billing, setBilling] = useState<BillingPeriod>('monthly')
   const [selectedPlan, setSelectedPlan] = useState<PlanKey | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
@@ -107,6 +119,15 @@ export default function BillingPage() {
       document.getElementById('gc-checkout-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
   }
+
+  // Preselect the plan passed from the signup funnel (/billing?plan=…).
+  useEffect(() => {
+    const plan = searchParams.get('plan')
+    if (plan && (VALID_PLANS as string[]).includes(plan)) {
+      handleCheckout(plan as PlanKey)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

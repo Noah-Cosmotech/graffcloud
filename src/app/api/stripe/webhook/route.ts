@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
+type PlanStatus = 'active' | 'trial' | 'cancelled' | 'past_due'
+
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,14 +12,41 @@ function adminClient() {
   )
 }
 
-async function setUserPlan(userId: string, plan: string, status: 'active' | 'trial' | 'cancelled') {
-  const db = adminClient()
-  await db.from('users').update({ plan, plan_status: status }).eq('id', userId)
+// Map a Stripe subscription status to our entitlement state. Anything that
+// isn't a genuinely paying/trialing state must NOT grant access: dunning
+// states become 'past_due' and everything unknown defaults to 'cancelled'.
+function mapSubStatus(s: Stripe.Subscription.Status): PlanStatus {
+  switch (s) {
+    case 'active':
+    case 'trialing':
+      return 'active'
+    case 'past_due':
+    case 'unpaid':
+    case 'incomplete':
+      return 'past_due'
+    case 'canceled':
+    case 'incomplete_expired':
+    case 'paused':
+      return 'cancelled'
+    default:
+      return 'cancelled'
+  }
 }
 
-async function setPlanStatusByEmail(email: string, status: 'active' | 'trial' | 'cancelled') {
+// Returns true on success. On failure we log and signal the caller to return a
+// non-2xx so Stripe retries the event rather than dropping it.
+async function updateUser(
+  match: { id: string } | { email: string },
+  patch: Record<string, string>
+): Promise<boolean> {
   const db = adminClient()
-  await db.from('users').update({ plan_status: status }).eq('email', email)
+  const q = db.from('users').update(patch)
+  const { error } = 'id' in match ? await q.eq('id', match.id) : await q.eq('email', match.email)
+  if (error) {
+    console.error('webhook user update failed:', error.message)
+    return false
+  }
+  return true
 }
 
 async function resolveCustomerEmail(customerId: string): Promise<string | null> {
@@ -41,32 +70,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  let ok = true
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
       const userId = session.metadata?.user_id
       const plan = session.metadata?.plan
       if (userId && plan) {
-        await setUserPlan(userId, plan, 'active')
+        ok = await updateUser({ id: userId }, { plan, plan_status: 'active' })
       }
       break
     }
 
     case 'customer.subscription.updated': {
       const sub = event.data.object as Stripe.Subscription
+      const planStatus = mapSubStatus(sub.status)
       const userId = sub.metadata?.user_id
-      const stripeStatus = sub.status
-      const planStatus: 'active' | 'trial' | 'cancelled' =
-        stripeStatus === 'active' || stripeStatus === 'trialing' ? 'active'
-        : stripeStatus === 'canceled' ? 'cancelled'
-        : 'trial'
-
       if (userId) {
-        const db = adminClient()
-        await db.from('users').update({ plan_status: planStatus }).eq('id', userId)
+        ok = await updateUser({ id: userId }, { plan_status: planStatus })
       } else {
         const email = await resolveCustomerEmail(sub.customer as string)
-        if (email) await setPlanStatusByEmail(email, planStatus)
+        if (email) ok = await updateUser({ email }, { plan_status: planStatus })
       }
       break
     }
@@ -75,15 +100,19 @@ export async function POST(req: NextRequest) {
       const sub = event.data.object as Stripe.Subscription
       const userId = sub.metadata?.user_id
       if (userId) {
-        const db = adminClient()
-        await db.from('users').update({ plan_status: 'cancelled' }).eq('id', userId)
+        ok = await updateUser({ id: userId }, { plan_status: 'cancelled' })
       } else {
         const email = await resolveCustomerEmail(sub.customer as string)
-        if (email) await setPlanStatusByEmail(email, 'cancelled')
+        if (email) ok = await updateUser({ email }, { plan_status: 'cancelled' })
       }
       break
     }
   }
 
+  // If a DB write failed, return 500 so Stripe redelivers the event instead of
+  // treating a paying customer's provisioning as done.
+  if (!ok) {
+    return NextResponse.json({ error: 'Failed to apply subscription state' }, { status: 500 })
+  }
   return NextResponse.json({ received: true })
 }

@@ -10,7 +10,8 @@ export interface Database {
           name: string | null
           org: string | null
           plan: 'starter' | 'pro' | 'enterprise' | null
-          plan_status: 'active' | 'trial' | 'cancelled' | null
+          plan_status: 'active' | 'trial' | 'cancelled' | 'past_due' | null
+          stripe_customer_id: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['users']['Row'], 'id' | 'created_at'>
@@ -36,7 +37,7 @@ export interface Database {
           property_id: string
           reported_by: string
           date: string
-          cost_nok: number
+          cost_nok: number | null
           status: 'new' | 'open' | 'matched' | 'closed'
           signature_id: string | null
           ai_match_confidence: number | null
@@ -45,6 +46,8 @@ export interface Database {
           gps_lng: number | null
           evidence_hash: string | null
           police_ref: string | null
+          surface: string | null
+          cctv: boolean
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['incidents']['Row'], 'id' | 'created_at'>

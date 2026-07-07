@@ -34,6 +34,10 @@ const GLOBE_HOME = toRad(8) - Math.PI / 2
 function PilotGlobe({ selected, onSelect }: { selected: number; onSelect: (i: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rotRef = useRef({ rot: GLOBE_HOME, dragging: false, lastX: 0, moved: 0, idleT: 0 })
+  // Read the highlighted city from a ref inside the RAF loop so re-selecting a
+  // city doesn't tear down and rebuild the animation frame subscription.
+  const selectedRef = useRef(selected)
+  selectedRef.current = selected
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -151,7 +155,7 @@ function PilotGlobe({ selected, onSelect }: { selected: number; onSelect: (i: nu
       PILOT_CITIES.forEach((city, i) => {
         const p = cityPx[i]
         if (!p.front) return
-        const isSel = i === selected
+        const isSel = i === selectedRef.current
         // Halo
         ctx.beginPath()
         ctx.arc(p.x, p.y, city.r + 5 + pulse * 4, 0, Math.PI * 2)
@@ -173,7 +177,8 @@ function PilotGlobe({ selected, onSelect }: { selected: number; onSelect: (i: nu
     }
     raf = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(raf)
-  }, [selected])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     const st = rotRef.current
@@ -209,12 +214,23 @@ function PilotGlobe({ selected, onSelect }: { selected: number; onSelect: (i: nu
     }
   }
 
+  // touchAction 'pan-y' means a vertical scroll gesture fires pointercancel, not
+  // pointerup — without this the globe stays stuck "dragging" and the idle sway
+  // freezes. Reset drag state so the animation resumes.
+  function onPointerCancel() {
+    const st = rotRef.current
+    st.dragging = false
+    st.idleT = 0
+  }
+
   return (
     <canvas
       ref={canvasRef}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      onLostPointerCapture={onPointerCancel}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab', touchAction: 'pan-y' }}
     />
   )

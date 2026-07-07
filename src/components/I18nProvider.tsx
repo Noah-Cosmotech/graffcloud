@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 
 const DICT = {
   en: {
@@ -19,10 +19,6 @@ const DICT = {
     hero_cta_primary: 'Start a 30-day trial',
     hero_cta_secondary: 'Watch 2-min demo',
     hero_proof: 'Piloted in Oslo, Bergen, Trondheim and Stavanger',
-    metric_incidents: 'Incidents ingested',
-    metric_cities: 'Cities in active graph',
-    metric_recovery: 'Owner cost recovery rate',
-    metric_clearance: 'Police referral clearance',
     section_how: 'How the intelligence layer works',
     step1_t: 'Capture',
     step1_d: 'Owners, tenants and transit crews upload from phone or desk. GPS, timestamp and chain-of-custody metadata are sealed into an immutable evidence record.',
@@ -271,10 +267,6 @@ const DICT = {
     hero_cta_primary: 'Start 30 dagers prøve',
     hero_cta_secondary: 'Se 2-min demo',
     hero_proof: 'Pilotert i Oslo, Bergen, Trondheim og Stavanger',
-    metric_incidents: 'Hendelser registrert',
-    metric_cities: 'Byer i aktiv graf',
-    metric_recovery: 'Kostnadsdekning for eier',
-    metric_clearance: 'Politihenleggelse omgjort',
     section_how: 'Slik fungerer etterretningslaget',
     step1_t: 'Innhent',
     step1_d: 'Eiere, leietakere og driftspersonell laster opp fra mobil eller desktop. GPS, tidsstempel og sporbarhet forsegles i et uforanderlig bevisregister.',
@@ -542,8 +534,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return (DICT[lang] as Record<string, string>)[key] ?? (DICT.en as Record<string, string>)[key] ?? key
   }, [lang])
 
+  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t])
+
   return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   )

@@ -39,13 +39,13 @@ const NAV_ITEMS = [
 ]
 
 const DEMO_INCIDENTS = [
-  { id: 'INC-04182', address: 'Thorvald Meyers gate 42', tag: 'K4Z3', cost: 'NOK 18,400', status: 'MATCHED', match: 94, lat: 59.923, lng: 10.757 },
-  { id: 'INC-04177', address: 'Markveien 18', tag: null, cost: 'NOK 4,200', status: 'NEW', match: null, lat: 59.921, lng: 10.754 },
-  { id: 'INC-04169', address: 'Storgata 36', tag: 'K4Z3', cost: 'NOK 9,800', status: 'OPEN', match: 71, lat: 59.913, lng: 10.748 },
-  { id: 'INC-04158', address: 'Grensen 17', tag: 'BRG-09', cost: 'NOK 12,100', status: 'MATCHED', match: 88, lat: 59.912, lng: 10.742 },
-  { id: 'INC-04144', address: 'Torvgata 2', tag: null, cost: 'NOK 3,400', status: 'NEW', match: null, lat: 59.910, lng: 10.746 },
-  { id: 'INC-04132', address: 'Pilestredet 75', tag: null, cost: 'NOK 2,900', status: 'OPEN', match: null, lat: 59.921, lng: 10.730 },
-  { id: 'INC-04101', address: 'Møllergata 6', tag: 'SVG-04', cost: 'NOK 6,700', status: 'CLOSED', match: 81, lat: 59.915, lng: 10.749 },
+  { id: 'INC-04182', address: 'Thorvald Meyers gate 42', tag: 'K4Z3', cost: 'NOK 18,400', costNok: 18400, dateRaw: '2026-07-02', status: 'MATCHED', match: 94, lat: 59.923, lng: 10.757 },
+  { id: 'INC-04177', address: 'Markveien 18', tag: null, cost: 'NOK 4,200', costNok: 4200, dateRaw: '2026-07-01', status: 'NEW', match: null, lat: 59.921, lng: 10.754 },
+  { id: 'INC-04169', address: 'Storgata 36', tag: 'K4Z3', cost: 'NOK 9,800', costNok: 9800, dateRaw: '2026-06-28', status: 'OPEN', match: 71, lat: 59.913, lng: 10.748 },
+  { id: 'INC-04158', address: 'Grensen 17', tag: 'BRG-09', cost: 'NOK 12,100', costNok: 12100, dateRaw: '2026-06-25', status: 'MATCHED', match: 88, lat: 59.912, lng: 10.742 },
+  { id: 'INC-04144', address: 'Torvgata 2', tag: null, cost: 'NOK 3,400', costNok: 3400, dateRaw: '2026-06-21', status: 'NEW', match: null, lat: 59.910, lng: 10.746 },
+  { id: 'INC-04132', address: 'Pilestredet 75', tag: null, cost: 'NOK 2,900', costNok: 2900, dateRaw: '2026-06-18', status: 'OPEN', match: null, lat: 59.921, lng: 10.730 },
+  { id: 'INC-04101', address: 'Møllergata 6', tag: 'SVG-04', cost: 'NOK 6,700', costNok: 6700, dateRaw: '2026-06-12', status: 'CLOSED', match: 81, lat: 59.915, lng: 10.749 },
 ]
 
 const DEMO_PROPERTIES = [
@@ -94,6 +94,7 @@ function getGreetingKey(): 'greet_morning' | 'greet_afternoon' | 'greet_evening'
 type DisplayIncident = {
   id: string; address: string; tag: string | null; cost: string
   status: string; match: number | null; lat: number; lng: number
+  dateRaw: string; costNok: number
 }
 type DisplayProperty = { name: string; readiness: number; cost: string; color: string }
 type DisplayAlert    = { level: string; color: string; dot: string; text: string }
@@ -144,14 +145,23 @@ function gpsToHeatDot(lat: number, lng: number, status: string) {
   }
 }
 
+function csvCell(value: string): string {
+  // Quote and escape any field so embedded commas/quotes/newlines can't break the row.
+  return `"${value.replace(/"/g, '""')}"`
+}
+
 function exportIncidentsCsv(incidents: DisplayIncident[]) {
   const header = 'ID,Property,Date,Signature,Status,Cost(NOK)'
-  const rows = incidents.map(inc => {
-    const costNok = inc.cost.replace('NOK ', '').replace(/,/g, '')
-    const date = new Date().toLocaleDateString('no-NO')
-    const sig = inc.tag ?? ''
-    return [inc.id, `"${inc.address}"`, date, sig, inc.status, costNok].join(',')
-  })
+  const rows = incidents.map(inc =>
+    [
+      csvCell(inc.id),
+      csvCell(inc.address),
+      csvCell(inc.dateRaw),       // real incident date, not the export day
+      csvCell(inc.tag ?? ''),
+      csvCell(inc.status),
+      String(inc.costNok),        // plain integer — no NBSP thousands separator
+    ].join(',')
+  )
   const csv = [header, ...rows].join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
@@ -211,9 +221,9 @@ function openPoliceReferral(inc: DisplayIncident) {
         <div class="field"><div class="field-key">Property / Address</div><div class="field-val">${inc.address}</div></div>
         <div class="field"><div class="field-key">Damage Cost</div><div class="field-val">${inc.cost}</div></div>
         <div class="field"><div class="field-key">Graffiti Signature</div><div class="field-val">${inc.tag ?? 'Not identified'}</div></div>
-        <div class="field"><div class="field-key">AI Match Confidence</div><div class="field-val">${inc.match ? inc.match + '%' : 'Pending analysis'}</div></div>
+        <div class="field"><div class="field-key">AI Match Confidence</div><div class="field-val">${inc.match != null ? inc.match + '%' : 'Pending analysis'}</div></div>
         <div class="field"><div class="field-key">GPS Coordinates</div><div class="field-val">${coords}</div></div>
-        <div class="field"><div class="field-key">Reported Date</div><div class="field-val">${now.toLocaleDateString('no-NO')}</div></div>
+        <div class="field"><div class="field-key">Incident Date</div><div class="field-val">${inc.dateRaw}</div></div>
       </div>
 
       <div class="section-label">Case Summary</div>
@@ -386,7 +396,7 @@ function IncidentDrawerContent({ inc }: { inc: DisplayIncident }) {
         <DrawerField label="Address" value={inc.address} />
         <DrawerField label="Damage cost" value={inc.cost} mono />
         {inc.tag && <DrawerField label="Signature" value={inc.tag} mono />}
-        {inc.match && <DrawerField label="AI match" value={`${inc.match}%`} mono />}
+        {inc.match != null && <DrawerField label="AI match" value={`${inc.match}%`} mono />}
       </div>
       <div style={{ padding: 16, borderRadius: 'var(--r-lg)', background: 'var(--bg-sand)' }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink-4)', marginBottom: 8 }}>Evidence timeline</div>
@@ -586,6 +596,8 @@ export default function DashboardPage() {
           address: propMap.get(inc.property_id)?.address ?? '—',
           tag: inc.signature_id ?? null,
           cost: formatNok(inc.cost_nok ?? 0),
+          costNok: inc.cost_nok ?? 0,
+          dateRaw: inc.date,
           status: (inc.status ?? 'new').toUpperCase(),
           match: inc.ai_match_confidence ?? null,
           lat: inc.gps_lat ?? 0,

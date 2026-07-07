@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { showToast, ToastContainer } from '@/components/Toast'
 import { LangToggle } from '@/components/LangToggle'
@@ -97,7 +97,7 @@ function drawGlobe(
 
   // Fibonacci surface dots
   if (showDots) {
-    const N = 1800
+    const N = 900
     const golden = Math.PI * (3 - Math.sqrt(5))
     ctx.fillStyle = 'rgba(255,255,255,0.55)'
     for (let i = 0; i < N; i++) {
@@ -134,16 +134,18 @@ function drawGlobe(
     const steps = 60
     const points: { sx: number; sy: number; rz: number }[] = []
 
+    // Slerp constants are fixed for the whole arc — compute once, not per step.
+    const dot = ax * bx + ay * by + az * bz
+    const omega = Math.acos(Math.max(-1, Math.min(1, dot)))
+    const degenerate = Math.abs(omega) < 0.001
+    const sinO = degenerate ? 1 : Math.sin(omega)
+
     for (let i = 0; i <= steps; i++) {
       const frac = i / steps
-      // Slerp
-      const dot = ax * bx + ay * by + az * bz
-      const omega = Math.acos(Math.max(-1, Math.min(1, dot)))
       let x0, y0, z0
-      if (Math.abs(omega) < 0.001) {
+      if (degenerate) {
         x0 = ax; y0 = ay; z0 = az
       } else {
-        const sinO = Math.sin(omega)
         const fa = Math.sin((1 - frac) * omega) / sinO
         const fb = Math.sin(frac * omega) / sinO
         x0 = fa * ax + fb * bx
@@ -154,25 +156,23 @@ function drawGlobe(
       points.push({ sx: cx + rx * R, sy: cy - ry * R, rz })
     }
 
-    // Draw arc segments
+    // Draw the whole arc as one path with a single shadowed stroke, rather than
+    // allocating a gradient and toggling shadowBlur once per segment (~60×/arc).
+    ctx.strokeStyle = colorWithAlpha('#E5485C', arcGlow * 0.85)
+    ctx.lineWidth = 1.5
+    ctx.shadowColor = '#E5485C'
+    ctx.shadowBlur = arcGlow * 8
+    ctx.beginPath()
+    let penDown = false
     for (let i = 0; i < steps; i++) {
       const p0 = points[i]
       const p1 = points[i + 1]
-      if (p0.rz < 0 && p1.rz < 0) continue
-      const alpha = arcGlow * (p0.rz > 0 ? 0.9 : 0.2)
-      const grad = ctx.createLinearGradient(p0.sx, p0.sy, p1.sx, p1.sy)
-      grad.addColorStop(0, colorWithAlpha('#E5485C', alpha))
-      grad.addColorStop(1, colorWithAlpha('#F06A7C', alpha))
-      ctx.beginPath()
-      ctx.strokeStyle = grad
-      ctx.lineWidth = 1.5
-      ctx.shadowColor = '#E5485C'
-      ctx.shadowBlur = arcGlow * 8
-      ctx.moveTo(p0.sx, p0.sy)
+      if (p0.rz < 0 && p1.rz < 0) { penDown = false; continue }
+      if (!penDown) { ctx.moveTo(p0.sx, p0.sy); penDown = true }
       ctx.lineTo(p1.sx, p1.sy)
-      ctx.stroke()
-      ctx.shadowBlur = 0
     }
+    ctx.stroke()
+    ctx.shadowBlur = 0
 
     // Photon particle
     if (showTrail) {

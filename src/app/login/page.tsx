@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { GCLogo } from '@/components/GCLogo'
 import { LangToggle } from '@/components/LangToggle'
 import { useI18n } from '@/components/I18nProvider'
@@ -90,10 +90,24 @@ function BankIDIcon() {
 
 /* ─── Main page ─────────────────────────────────────────────────── */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
+  )
+}
+
+function LoginInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t } = useI18n()
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  // Signup CTAs across the marketing funnel link here with ?mode=signup and an
+  // optional &plan=…; honour both so the sign-up form (and chosen plan) isn't lost.
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin'
+  const planParam = searchParams.get('plan')
+
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -103,6 +117,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<{email?: string; password?: string; name?: string}>({})
   const passwordRef = useRef<HTMLInputElement>(null)
+
+  // Where to land after auth: the chosen plan's checkout, otherwise the dashboard.
+  const postAuthPath = planParam ? `/billing?plan=${encodeURIComponent(planParam)}` : '/dashboard'
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -136,7 +153,7 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      router.push('/dashboard')
+      router.push(postAuthPath)
       router.refresh()
     } catch {
       showToast('Sign-in failed. Please try again.', 'error')
@@ -158,7 +175,7 @@ export default function LoginPage() {
         password,
         options: {
           data: { name: name.trim(), org: org.trim() || null },
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(postAuthPath)}`,
         },
       })
       if (error) {
@@ -235,15 +252,15 @@ export default function LoginPage() {
             <em style={{ color: 'var(--brand-bright)', fontStyle: 'italic' }}>48 hours.</em>
           </h2>
 
-          {/* Stats row */}
+          {/* Stats row — sourced open figures, not fabricated product metrics */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 48 }}>
             {[
-              { n: '41,842', l: 'Incidents' },
-              { n: '92%', l: 'Match rate' },
-              { n: '9', l: 'Cities' },
+              { n: 'NOK 50M+', l: 'Tag removal / yr, Oslo' },
+              { n: '+18%', l: 'Reported damage vs pre-pandemic' },
+              { n: '40%', l: 'Police clearance rate, 2024' },
             ].map((s, i) => (
               <div key={i}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--brand-bright)', lineHeight: 1, marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--brand-bright)', lineHeight: 1, marginBottom: 4, whiteSpace: 'nowrap' }}>
                   {s.n}
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}>{s.l}</div>
@@ -251,7 +268,7 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Testimonial */}
+          {/* Value statement — honest, unattributed during the pilot */}
           <div style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.1)',
@@ -259,37 +276,19 @@ export default function LoginPage() {
             padding: '24px 28px',
             maxWidth: 420,
           }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.4)', marginBottom: 12 }}>
+              PILOT 2026 · OSLO · BERGEN · TRONDHEIM · STAVANGER
+            </div>
             <p style={{
               fontFamily: 'var(--font-display)',
               fontSize: 16,
               color: 'rgba(255,255,255,0.85)',
               lineHeight: 1.55,
-              margin: '0 0 16px',
+              margin: 0,
               fontStyle: 'italic',
             }}>
-              "GraffCloud gave us the first crew-level evidence our legal team could actually use. Three repeat offenders identified across Oslo and Bergen within two weeks."
+              Turn every tagged wall into a timestamped, GPS-sealed evidence record — and hand your board and the police a case file that actually moves.
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12,
-                color: '#fff',
-                fontWeight: 600,
-              }}>
-                GL
-              </div>
-              <div>
-                <div style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>Geirr Løvås</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Head of Security · Obos Eiendom</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

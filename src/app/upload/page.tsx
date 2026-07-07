@@ -11,7 +11,7 @@ const authConfigured = Boolean(
 )
 
 // ── types ─────────────────────────────────────────────────────────────────────
-interface Photo { id: string; url: string; name: string; file: File }
+interface Photo { id: string; url: string; name: string; file: File; digest: string }
 interface GeoCoords { lat: number; lon: number; accuracy?: number }
 
 const AI_MATCHES = [
@@ -31,10 +31,11 @@ const PROPERTY_SUGGESTIONS = [
 
 const SURFACE_TYPES = ['Wall', 'Window', 'Vehicle', 'Transit', 'Fence', 'Other']
 
-function hashString(s: string): string {
-  let h = 0
-  for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0 }
-  return Math.abs(h).toString(16).padStart(8, '0').repeat(8).slice(0, 64)
+// Real SHA-256 (hex) over the given bytes — used for the tamper-evident
+// evidence seal so the value actually corresponds to the photo contents.
+async function sha256Hex(data: BufferSource): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 function formatTime(d: Date): string {
@@ -49,10 +50,18 @@ export default function UploadPage() {
   const [dragOver, setDragOver] = useState(false)
   const [property, setProperty] = useState('')
   const [surface, setSurface] = useState('Wall')
-  const [incidentDate, setIncidentDate] = useState(() => new Date().toISOString().slice(0, 16))
+  const [incidentDate, setIncidentDate] = useState(() => {
+    // datetime-local expects LOCAL wall-clock; toISOString would be UTC and
+    // render 1-2h early for Norway (and a day early just after midnight).
+    const d = new Date()
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+    return d.toISOString().slice(0, 16)
+  })
   const [cost, setCost] = useState('')
   const [cctv, setCctv] = useState(false)
-  const [coords, setCoords] = useState<GeoCoords>({ lat: 59.9139, lon: 10.7522 })
+  // null until a real device GPS fix arrives — never a fabricated fallback.
+  const [coords, setCoords] = useState<GeoCoords | null>(null)
+  const [sealHash, setSealHash] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoError, setGeoError] = useState(false)
   const [bountyAmount, setBountyAmount] = useState('')
@@ -95,10 +104,15 @@ export default function UploadPage() {
 
   const addFiles = (files: FileList | null) => {
     if (!files) return
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach(async file => {
       if (!file.type.startsWith('image/')) return
       const url = URL.createObjectURL(file)
-      setPhotos(prev => [...prev, { id: Math.random().toString(36).slice(2), url, name: file.name, file }])
+      const id = Math.random().toString(36).slice(2)
+      setPhotos(prev => [...prev, { id, url, name: file.name, file, digest: '' }])
+      try {
+        const digest = await sha256Hex(await file.arrayBuffer())
+        setPhotos(prev => prev.map(p => (p.id === id ? { ...p, digest } : p)))
+      } catch { /* digest stays empty; seal will note it */ }
     })
   }
 
@@ -106,7 +120,26 @@ export default function UploadPage() {
     e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files)
   }
 
-  const removePhoto = (id: string) => setPhotos(prev => prev.filter(p => p.id !== id))
+  const removePhoto = (id: string) => setPhotos(prev => {
+    const gone = prev.find(p => p.id === id)
+    if (gone) URL.revokeObjectURL(gone.url)
+    return prev.filter(p => p.id !== id)
+  })
+
+  // Release object URLs for all current previews on unmount (mobile camera
+  // photos are multi-MB; leaked blobs stay pinned for the tab's lifetime).
+  useEffect(() => {
+    return () => { photos.forEach(p => URL.revokeObjectURL(p.url)) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Recompute the evidence seal from the photo digests + incident metadata.
+  useEffect(() => {
+    let cancelled = false
+    const material = `${photos.map(p => p.digest).join('|')}|${coords ? `${coords.lat},${coords.lon}` : 'no-gps'}|${incidentDate}`
+    sha256Hex(new TextEncoder().encode(material)).then(h => { if (!cancelled) setSealHash(h) })
+    return () => { cancelled = true }
+  }, [photos, coords, incidentDate])
 
   const refreshGPS = () => {
     if (!navigator.geolocation) return
@@ -145,9 +178,15 @@ export default function UploadPage() {
       form.append('property', property.trim())
       form.append('date', incidentDate)
       form.append('cost', cost || '0')
-      form.append('lat', String(coords.lat))
-      form.append('lon', String(coords.lon))
-      form.append('geoValid', geoError ? '0' : '1')
+      form.append('surface', surface)
+      form.append('cctv', cctv ? '1' : '0')
+      // Only claim a verified GPS position when a real device fix was received.
+      const hasFix = coords !== null
+      form.append('geoValid', hasFix ? '1' : '0')
+      if (hasFix) {
+        form.append('lat', String(coords.lat))
+        form.append('lon', String(coords.lon))
+      }
       form.append('hash', sealHash)
       if (postBounty && bountyAmount) form.append('bountyAmount', bountyAmount)
 
@@ -166,7 +205,6 @@ export default function UploadPage() {
     }
   }
 
-  const sealHash = hashString(`${coords.lat},${coords.lon},${now.toISOString()},${photos.map(p => p.name).join(',')}`)
   const device = typeof navigator !== 'undefined' ? (navigator.userAgent.match(/\(([^)]+)\)/)?.[1] ?? 'Unknown') : 'Unknown'
   const STAGES = [t('stage_uploading'), t('stage_sealing'), t('stage_hashing'), t('stage_done')]
 
@@ -317,8 +355,8 @@ export default function UploadPage() {
                 <Field label={t('up_field_gps')}>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <div style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: `1px solid ${geoError ? 'var(--line-2)' : 'var(--line-2)'}`, borderRadius: 10, fontFamily: 'var(--font-mono)', fontSize: 12, color: geoError ? 'var(--ink-5)' : 'var(--ink-3)' }}>
-                      {geoLoading ? t('up_gps_detecting') : geoError ? t('up_gps_unavailable') : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`}
-                      {!geoLoading && !geoError && coords.accuracy && (
+                      {geoLoading ? t('up_gps_detecting') : !coords ? t('up_gps_unavailable') : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`}
+                      {!geoLoading && coords && coords.accuracy && (
                         <span style={{ color: 'var(--ink-5)', marginLeft: 8 }}>±{Math.round(coords.accuracy)}m</span>
                       )}
                     </div>
@@ -427,6 +465,7 @@ export default function UploadPage() {
                 )}
                 <button
                   onClick={() => {
+                    photos.forEach(p => URL.revokeObjectURL(p.url))
                     setStep(1); setPhotos([]); setProperty(''); setBountyAmount('')
                     setPostBounty(false); setIncidentDisplayId(null)
                   }}
@@ -474,7 +513,7 @@ export default function UploadPage() {
                   {t('up_seal_live')}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <SealRow label="GPS" value={geoError ? t('up_seal_denied') : `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`} />
+                  <SealRow label="GPS" value={coords ? `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}` : t('up_seal_denied')} />
                   <SealRow label={t('up_seal_ts')} value={formatTime(now)} highlight />
                   <SealRow label={t('up_seal_device')} value={device.slice(0, 30)} />
                   <SealRow label={t('up_seal_photos')} value={`${photos.length} file${photos.length !== 1 ? 's' : ''}`} />
